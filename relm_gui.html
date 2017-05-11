@@ -8,7 +8,9 @@
 </head>
 
 <body>
-    <nav><a href="index.html">Home</a></nav>
+    <div id="header_wrap" class="inner">
+        <a href="index.html">Home</a>
+    </div>
     <div id="main_content_wrap" class="outer">
         <div id="main_content" class="inner">
             <h1 id="simple-gui-in-relm"> Simple GUI in Relm</h1>
@@ -28,7 +30,201 @@
 <p>So my test was to see how simple it would be to get the basic file explorer example shown in <a href="https://www.vandenoever.info/blog/2017/02/17/a-simple-rust-gui-with-qml.html">the QML article</a>
  using Relm. To my surprise I managed to get it done in under 200 line (199 to be exact XD). If all you want is to have a look at the code and play around with it (be warned I wouldn't say it is beautiful just yet) I have made a <a href="https://gist.github.com/maccoda/a93fb2a0ef1f283bc63a4be9e5f8fe9c">gist</a>
 , otherwise if you'd like to stick around we can build it up bit by bit.</p>
-<h2 id="to-be-continued..."> TO BE CONTINUED...</h2>
+<h2 id="model"> Model</h2>
+<p>First things first, we want to define our model of our little application. For those note so familiar with this concept the model is data that will adequately explain the state of your application. Since it is just a very simple file browser all we need is the current directory. So it will look a little something like this:</p>
+<pre><code class="language-rust">#[derive(Clone)]
+pub struct Directory {
+    current_dir: PathBuf,
+}
+</code></pre>
+<p>Note that you will need your model to implement the <code>Clone</code>
+ trait to used as part of Relm.</p>
+<h2 id="message"> Message</h2>
+<p>Now we don't just a static window that doesn't respond to much so we need a way of sending events/messages to update the state of our application. The beauty of Relm is just how simple it makes it to handle several events and even more so you are able to categorize the events logically in terms of your application as opposed to the underlying framework. That is, if you have several different UI events that from the perspective of your application are indifferent then you are able to send the same message for both with a more descriptive name.</p>
+<p>Now this example doesn't really delve into that but it isn't too much of a stretch to see how it could be great. For our little application we only care when the user selects an item in the list of files we present to them and of course when they want to quit.</p>
+<pre><code class="language-rust">#[derive(Msg)]
+enum Msg {
+    ItemSelect,
+    Quit,
+}
+</code></pre>
+<p>Here we use the one of the biggest time savers in Rust, the <code>derive</code>
+ attribute to derive the <code>Msg</code>
+ trait from Relm.</p>
+<h2 id="creating-the-main-widget"> Creating the Main Widget</h2>
+<p>The final step now is to create our widget. As seen in the <a href="http://relm.ml/relm-intro">intro to Relm</a>
+ there are two methods to this using the <code>#[widget]</code>
+ attribute or implementing the <code>Widget</code>
+ trait. WIth the structure of this widget I had a bit of difficulty getting the <code>#[widget]</code>
+ attribute to entirely agree with me so I implemented the trait which I did not mind at all as I always feel that the amazing macro system in Rust can add a layer of complexity when it comes to solving errors.</p>
+<p>Below is the full implementation for which we will look at individually.</p>
+<pre><code class="language-rust">// Top level structure
+#[derive(Clone)]
+struct Win {
+    window: gtk::Window,
+    tree_view: gtk::TreeView,
+}
+
+impl Widget for Win {
+    type Model = Directory;
+    type Msg = Msg;
+    type Root = gtk::Window;
+
+    fn model() -> Directory {
+        let working_directory = fs::canonicalize(".").expect("Failed to open directory");
+
+        Directory { current_dir: working_directory }
+    }
+
+    fn root(&self) -> &Self::Root {
+        &self.window
+    }
+
+    fn update(&mut self, event: Msg, model: &mut Self::Model) {
+        match event {
+            Msg::ItemSelect => {
+                let selection = self.tree_view.get_selection();
+                if let Some((list_model, iter)) = selection.get_selected() {
+                    let is_dir: bool = list_model
+                        .get_value(&iter, IS_DIR_COL)
+                        .get::<bool>()
+                        .unwrap();
+
+                    if is_dir {
+                        let dir_name = list_model
+                            .get_value(&iter, VALUE_COL)
+                            .get::<String>()
+                            .unwrap();
+                        println!("{:?} selected", dir_name);
+                        let new_dir = if dir_name == ".." {
+                            // Go up parent directory if it exists
+                            model
+                                .current_dir
+                                .parent()
+                                .unwrap_or(&model.current_dir)
+                                .to_owned()
+                        } else {
+                            model.current_dir.join(dir_name)
+                        };
+
+                        model.current_dir = new_dir;
+                        let new_model = create_and_fill_model(&model.current_dir).unwrap();
+
+                        self.tree_view.set_model(Some(&new_model));
+                    }
+                }
+            }
+            Msg::Quit => gtk::main_quit(),
+        }
+    }
+
+    fn view(relm: RemoteRelm<Msg>, _model: &Self::Model) -> Win {
+        let window = create_window("Treeview");
+
+        let scroll = gtk::ScrolledWindow::new(None, None);
+        let tree = gtk::TreeView::new();
+
+
+        let column = gtk::TreeViewColumn::new();
+        let cell = gtk::CellRendererText::new();
+
+        column.pack_start(&cell, true);
+        // Association of the view's column with the model's 'id' column.
+        let id = 0;
+        column.add_attribute(&cell, "text", id);
+        tree.append_column(&column);
+
+
+        let model = create_and_fill_model(&_model.current_dir).unwrap();
+
+        tree.set_model(Some(&model));
+
+        // tree.connect_cursor_changed(change_dir);
+        connect!(relm, tree, connect_cursor_changed(_), Msg::ItemSelect);
+        connect!(relm, window, connect_delete_event(_, _) (Some(Msg::Quit), Inhibit(false)));
+
+        scroll.add(&tree);
+        window.add(&scroll);
+
+        window.show_all();
+
+        Win {
+            window: window,
+            tree_view: tree,
+        }
+    }
+}
+</code></pre>
+<h3 id="top-level-widget"> Top Level Widget</h3>
+<pre><code class="language-rust">struct Win {
+    window: gtk::Window,
+    tree_view: gtk::TreeView,
+}
+</code></pre>
+<p>Of course we have to have a root or top level widget, the one that will contain all other widgets. This is exactly what the <code>Win</code>
+ struct is, it is our window (mind the pun) into the GTK widgets. Here we have the encasing <code>gtk::window</code>
+ for our root widget and we wanted to open access to the <code>gtk::TreeView</code>
+ which will contain the file listing.</p>
+<h3 id="widget-type-declarations"> Widget Type Declarations</h3>
+<p>When implementing the <code>Widget</code>
+ trait we need to declare</p>
+<ul><li>the <code>Model</code>
+ of our application already discussed in the <a href="#model">model</a>
+ section,</li>
+<li>the <code>Msg</code>
+ being the events to communicate changes already discussed in the <a href="#message">message</a>
+ section,</li>
+<li>the <code>Root</code>
+ element of the application, this is the GTK element that will house the other widgets. For us this is the <code>gtk::Window</code>
+.</li>
+</ul>
+<p>For the notions of <code>Model</code>
+ and <code>Root</code>
+, Relm's <code>Widget</code>
+ provides a function to construct/access these through the <code>model()</code>
+ function to initialize the model, and <code>root()</code>
+ to provide access to the root element.</p>
+<h3 id="view"> View</h3>
+<p>Now we finally have to build our view to describe how it should look. This is where Relm made the delightful <code>view!</code>
+ macro to allow for a view to be built in a declarative fashion. However I found that it was a bit easier to do away with this and just simply implement the trait function in the usual fashion. This was partly due to the fact that I had already played around with this idea with GTK and had some code at hand.</p>
+<p>The goal of the <code>view()</code>
+ function is to construct the view exactly as desired and return our <a href="#top-level-widget">top level widget</a>
+. In here also we add all of event listeners using the simple <code>connect!</code>
+ macro.</p>
+<pre><code class="language-rust">connect!(relm, tree, connect_cursor_changed(_), Msg::ItemSelect);
+        connect!(relm, window, connect_delete_event(_, _) (Some(Msg::Quit), Inhibit(false)));
+</code></pre>
+<p>Don't forget to make it visible also!</p>
+<pre><code class="language-rust">window.show_all();
+</code></pre>
+<h3 id="updating-from-events"> Updating From Events</h3>
+<p>The final part of this trait to implement is the <code>update()</code>
+ function. This is where our events will be handled depending on our <a href="#message">message</a>
+ received. Since there isn't a lot going on here I haven't gone for the asynchronous version of this and the function signature is the following:</p>
+<pre><code class="language-rust">fn update(&mut self, event: Msg, model: &mut Self::Model)
+</code></pre>
+<p>As you can see from this function we have:</p>
+<ul><li><code>&mut self</code>
+ so we are able to manipulate the main widget, which in our case will be with the intention to update the <code>gtk::TreeView</code>
+ when a new directory is selected.</li>
+<li><code>event: Msg</code>
+ so that we can perform a simple <code>match</code>
+ on the event received and have clear separation of our event handling code.</li>
+<li><code>&mut Self::Model</code>
+ which will provide mutable access to the model, allowing us to update it if required from the event.</li>
+</ul>
+<h3 id="but-what-about-the-other-code?"> But what about the other code?</h3>
+<p>As you may notice in the gist there is a whole bunch of other code that I had there more related to the construction of the GTK elements. This is heavily based on example code from <code>gtk-rs</code>
+ which now has even more documentation so thought could just leave that for the reader to understand XD.</p>
+<h2 id="actually-running-it"> Actually Running It</h2>
+<p>Of course what good is all this if we cannot run it! Just make sure your main looks like the following and it all can get happening!</p>
+<pre><code class="language-rust">fn main() {
+    relm::run::<Win>().unwrap();
+}
+</code></pre>
+<h1 id="conclusion"> Conclusion</h1>
+<p>Overall I found Relm as a great addition to the Rust GUI libraries and very simple to use especially when UI is not your strong suit. It abstracts away several repeated details that we required to make the borrow checker smile allowing the user to put something together quite quickly.</p>
+<p>That's all for the first post. Hope this has helped!</p>
 
 
         </div>
