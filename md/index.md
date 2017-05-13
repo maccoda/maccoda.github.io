@@ -17,6 +17,9 @@ themes).
 Relm is a GUI framework built off GTK and looked like a great candidate for my
 first Rust GUI program.
 
+----
+## [Cross Compiling Rust](cross_compilation.html)
+Looking into how to compile Windows binaries on a Linux machine for Rust.
 
 ----
 This site is using the [slate][slate] theme for Jekyll
