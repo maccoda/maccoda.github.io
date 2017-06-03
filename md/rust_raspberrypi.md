@@ -74,7 +74,7 @@ The typical way to represent constants within C would be like the following:
 ```
 This is very common for a language like C but we can do a lot better in Rust to make it far simpler to separate concepts. The issue that constants like these raise is that we end up with functions that accept integers for which we just pass some value in that was included from some distant header file.
 
-What would be far clearer is representing this as an enumeration and Rust has a very simple way of handling this that I only came across during this process. The Rust Book handles the concept of enumerations quite well but I didn't come across the part where we are able to assign ordinals to the enumeration, hence we could have something like the following:
+What would be far clearer is representing this as an enumeration . The Rust representation for enumerations is very powerful but it doesn't have the concept of ordinals, so I found the simplest way was to have a trait that exposed this, with the eventual hope to make a macro of it.
 ```
 enum DigitalValue {
     Low = 0,
@@ -85,6 +85,11 @@ enum DigitalValue {
 Which allows us to be explicit in the types we can give to functions using these constants:
 ```
 fn digital_write(value: DigitalValue)
+```
+
+And access them as:
+```
+bindings::digitalWrite(value as i32);
 ```
 
 ## Cross compilation for Raspberry Pi
