@@ -65,6 +65,28 @@ improved the notion of constants, all the `#def` within C library can now be
 represented using enums and hence better express their purpose and context for
 usage.
 
+### Mapping Constants
+
+The typical way to represent constants within C would be like the following:
+```
+#def LOW 0
+#def HIGH 1
+```
+This is very common for a language like C but we can do a lot better in Rust to make it far simpler to separate concepts. The issue that constants like these raise is that we end up with functions that accept integers for which we just pass some value in that was included from some distant header file.
+
+What would be far clearer is representing this as an enumeration and Rust has a very simple way of handling this that I only came across during this process. The Rust Book handles the concept of enumerations quite well but I didn't come across the part where we are able to assign ordinals to the enumeration, hence we could have something like the following:
+```
+enum DigitalValue {
+    Low = 0,
+    High = 1,
+}
+```
+
+Which allows us to be explicit in the types we can give to functions using these constants:
+```
+fn digital_write(value: DigitalValue)
+```
+
 ## Cross compilation for Raspberry Pi
 
 The general idea of cross compilation I have already covered in a [previous
