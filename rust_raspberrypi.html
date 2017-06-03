@@ -1,0 +1,73 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css">
+    
+
+    <title>Maccoda Mail</title>
+</head>
+
+<body>
+    <div id="header_wrap" class="inner">
+        <a href="index.html">Home</a>
+    </div>
+    <div id="main_content_wrap" class="outer">
+        <div id="main_content" class="inner">
+            <h1 id="binding-raspberry-pi-libraries"> Binding Raspberry Pi Libraries</h1>
+<p>My background with software stemmed from my interest in electronics and embedded software and when I saw that Rust was starting to get some traction in this area I knew that I had to give it a go and see how far I could get.</p>
+<p>To see the actual source referred to in this post you can find it on <a href="https://github.com/maccoda/wiringpi-rs">Github</a>
+</p>
+<p>TL;DR Got the LED blinking. Boo yeah!</p>
+<h2 id="the-project"> The project</h2>
+<p>The goal of the project was create Rust bindings for the <a href="http://wiringpi.com">wiringPi library</a>
+, this is a Arduino like library for using the GPIO on the Raspberry Pi. Starting off this was just an experiment to looking into the usage of the <code>bindgen</code>
+ crate now that they have a very useful <a href="https://servo.github.io/rust-bindgen/">guide</a>
+ for how to utilize <code>bindgen</code>
+ in generating FFI bindings to C and C++ libraries. Of course as I should have realized, this also would then lead to cross compilation again but now with the target being an embedded device and hopefully opening the way for more of these ports and making Rust a common language for ARM devices.</p>
+<p>Also it would be extremely rude of me not to mention that this work has already been done my Ogeon in the crate <a href="https://github.com/Ogeon/rust-wiringpi">rust-wiringpi</a>
+, so this was more of an exercise for myself, but I was very lucky someone had done the hard yards as this repository greatly assisted me in the cross compilation aspect of this project.</p>
+<h2 id="bindings"> Bindings</h2>
+<p>Writing the bindings was rather painless thanks to the guide and <code>bindgen</code>
+, I won't explain the process here as the <a href="https://servo.github.io/rust-bindgen/">guide</a>
+ does a great job of that. In generating these bindings there was very few manual components in getting the bindings created. However the bindings created aren't very Rust-ic, they are just a one to one mapping of the functions and constants defined within a header. It was really lacking a lot of the strong typing that I have come to love in Rust, so I thought surely there is a better way to make these bindings, and more importantly surely I am not the first to have this idea.</p>
+<p>Sure enough I wasn't after doing some searching I found some interesting takes on how to make the bindings to existing C/C++ libraries. The one I chose was to add the library as a <a href="https://git-scm.com/book/en/v2/Git-Tools-Submodules">git submodule</a>
+ within my repository so that I was able to build it from source, this would prove to be vital for the cross compilation aspect of this. Then on top of this I had the one simple project that would generate the bindings using <code>bindgen</code>
+ then finally the main project which would be using these bindings but expose an API of my choice rather than that of the wiringPi library (not saying its API is poor, just wanted to make it more idiomatic for Rust).</p>
+<p>This meant that my structure would look something like the following:</p>
+<pre><code class="language-">wiringpi-rs
+├-src
+├-wiringPi-bindings
+| ├-src
+| ├-build.rs
+| └ Cargo.toml
+└-WiringPi
+</code></pre>
+<p>The most important aspect of wrapping these bindings also means that users of the library aren't having to wrap every library call in an <code>unsafe</code>
+ block as our wrappings can handle this and only expose the aspects we want. Further it really improved the notion of constants, all the <code>#def</code>
+ within C library can now be represented using enums and hence better express their purpose and context for usage.</p>
+<h2 id="cross-compilation-for-raspberry-pi"> Cross compilation for Raspberry Pi</h2>
+<p>The general idea of cross compilation I have already covered in a <a href="cross_compilation.html">previous post</a>
+ so I won't go into that here but just the specifics required for this project.</p>
+<p>This part of the project I managed to get most of my answers from the Rust community from an <a href="https://stackoverflow.com/questions/29917513/how-can-i-compile-rust-code-to-run-on-a-raspberry-pi-2">SO answer</a>
+ to the original <a href="https://github.com/Ogeon/rust-wiringpi">rust-wiringpi</a>
+. The former in what was the correct target for the Raspberry Pi and the latter for how to build the WiringPi library as part of the bindings build, hence ensuring the build library would have the correct architecture. Put simply if you follow the general instructions I provided in the <a href="cross_compilation.html">Cross Compilation</a>
+ post the target you are wanting is: <b>arm-unknown-linux-gnueabihf</b>
+.</p>
+<p>The two aspects go hand in hand as essentially what we are doing is ensuring we have the linker for the correct target and configuring first Cargo to do this correctly for us, then secondly we use the build tools of the library we are binding to, to ensure that the linker used there is that same as the target we are going for. In order to get the WiringPi library built for the target I followed off what was done in the original bindings which was to add a Makefile for which we set the <code>CC</code>
+ variable to the linker that we were requiring for the Raspberry Pi.</p>
+<pre><code class="language-">CC=arm-linux-gnueabihf-gcc
+</code></pre>
+<p>After adding this I was able to overcome all of the build issues and then with a simple <code>scp</code>
+ moved the built binary which you can find in <code>target/arm-unknown-linux-gnueabihf/debug/</code>
+ or <code>target/arm-unknown-linux-gnueabihf/release</code>
+ the LED was blinking from the Raspberry Pi!</p>
+
+
+        </div>
+
+    </div>
+</body>
+
+</html>

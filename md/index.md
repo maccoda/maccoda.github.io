@@ -14,12 +14,25 @@ themes).
 
 ----
 ## [Making my first GUI in Relm](relm_gui.html)
+
 Relm is a GUI framework built off GTK and looked like a great candidate for my
 first Rust GUI program.
 
 ----
 ## [Cross Compiling Rust](cross_compilation.html)
+
 Looking into how to compile Windows binaries on a Linux machine for Rust.
+
+----
+## [Binding Raspberry Pi Libraries](rust_raspberrypi.html)
+
+Tackling two main areas that Rust has greatly simplified. Binding to C/C++ libraries and cross compiling for embedded systems (or not too embedded in terms of the Raspberry Pi)
+
+----
+## [Rust Documentation Reference](documentation.html)
+
+A very simple reference to help those wishing to add to the Rust documentation
+or for the documentation of your own crates.
 
 ----
 This site is using the [slate][slate] theme for Jekyll

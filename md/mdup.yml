@@ -1,5 +1,6 @@
 gen_index: false
 out_dir: "/home/dmaccora/workspace/maccoda-mail"
-stylesheet: "stylesheets/stylesheet.css"
+stylesheet:
+  - "stylesheets/stylesheet.css"
 copy_resources: false
 title: "Maccoda Mail"
