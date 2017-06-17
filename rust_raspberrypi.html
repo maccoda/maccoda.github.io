@@ -53,7 +53,7 @@
 #def HIGH 1
 </code></pre>
 <p>This is very common for a language like C but we can do a lot better in Rust to make it far simpler to separate concepts. The issue that constants like these raise is that we end up with functions that accept integers for which we just pass some value in that was included from some distant header file.</p>
-<p>What would be far clearer is representing this as an enumeration and Rust has a very simple way of handling this that I only came across during this process. The Rust Book handles the concept of enumerations quite well but I didn't come across the part where we are able to assign ordinals to the enumeration, hence we could have something like the following:</p>
+<p>What would be far clearer is representing this as an enumeration . The Rust representation for enumerations is very powerful but it doesn't have the concept of ordinals, so I found the simplest way was to have a trait that exposed this, with the eventual hope to make a macro of it.</p>
 <pre><code class="language-">enum DigitalValue {
     Low = 0,
     High = 1,
@@ -61,6 +61,9 @@
 </code></pre>
 <p>Which allows us to be explicit in the types we can give to functions using these constants:</p>
 <pre><code class="language-">fn digital_write(value: DigitalValue)
+</code></pre>
+<p>And access them as:</p>
+<pre><code class="language-">bindings::digitalWrite(value as i32);
 </code></pre>
 <h2 id="cross-compilation-for-raspberry-pi"> Cross compilation for Raspberry Pi</h2>
 <p>The general idea of cross compilation I have already covered in a <a href="cross_compilation.html">previous post</a>

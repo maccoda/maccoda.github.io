@@ -22,7 +22,14 @@
 <ul><li>Wrap lines to 80 characters</li>
 <li>Leave room for headings to breathe, empty line above and below.</li>
 </ul>
-<h2 id="linking"> Linking</h2>
+<h2 id="templates"> Templates</h2>
+<p>Standardization is always good in the standard library so to address these the documentation team developed some templates for common documentation which makes the feel of the documentation very consistent and easy to write.</p>
+<h3 id="iterator-template"> Iterator Template</h3>
+<p>When describing a struct that implements <code>Iterator</code>
+ the following template should be used:</p>
+<blockquote><p>An iterator that {what it does}</p>
+<p>This struct is create by the {foo} method[ on {trait}]. See its documentation for more.</p>
+</blockquote><h2 id="linking"> Linking</h2>
 <p>This was the part I continue to struggle with as it is a bit confusing without a reference nearby.</p>
 <h3 id="modules"> Modules</h3>
 <p>Each module is located in its own sub-directory. That is if my crate is called <code>foo</code>
