@@ -1,0 +1,27 @@
+pre {
+    background: inherit;
+    border: none;
+    width: 50%;
+}
+
+.container-fluid, .navbar {
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.rust {
+  color: #262625;
+  background-color: #e1e1db;
+}
+
+tr, td, th {
+    border: 1px solid gray;
+    padding: 3px;
+}
+
+img {
+    max-width: 60%;
+    max-height: auto;
+}
+

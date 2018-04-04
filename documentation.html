@@ -2,27 +2,41 @@
 
 <head>
     <meta charset="utf-8">
-    
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css">
-    
 
-    <title>Maccoda Mail</title>
+    <title>Maccoda Mail - Writing Rust Documentation</title>
+
+    <!-- Bootstrap theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+    <!-- Highlight.js -->
+    <link rel="stylesheet" href="highlight.css">
+    <link rel="stylesheet" href="tomorrow-night.css">
+
+    <link rel="stylesheet" href="made-up.css">
+    <!-- Apply user defined styles last -->
+    
 </head>
 
 <body>
-    <div id="header_wrap" class="inner">
-        <a href="index.html">Home</a>
-    </div>
-    <div id="main_content_wrap" class="outer">
-        <div id="main_content" class="inner">
-            <h1 id="writing-rust-documentation"> Writing Rust Documentation</h1>
+    <nav class="navbar navbar-default">
+        <div class="navbar-header">
+            <div class="container-fluid">
+                <ul class="nav navbar-nav">
+                    <a class="navbar-brand" href="index.html">Home</a>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <h1 id="writing-rust-documentation"> Writing Rust Documentation</h1>
 <p>Personally I have found Rust documentation to be great and very easy to follow. Further I really enjoy that I can easily access the source code from the documentation.</p>
 <p>Recently I have tried to contribute back through writing some documentation on the standard library and thought I would try construct a reference for guidelines and principles the docs team seem to be following.</p>
 <h2 id="formatting"> Formatting</h2>
 <ul><li>Wrap lines to 80 characters</li>
 <li>Leave room for headings to breathe, empty line above and below.</li>
-</ul>
-<h2 id="templates"> Templates</h2>
+</ul><h2 id="templates"> Templates</h2>
 <p>Standardization is always good in the standard library so to address these the documentation team developed some templates for common documentation which makes the feel of the documentation very consistent and easy to write.</p>
 <h3 id="iterator-template"> Iterator Template</h3>
 <p>When describing a struct that implements <code>Iterator</code>
@@ -61,9 +75,13 @@
 </code></pre>
 
 
-        </div>
-
     </div>
+
+
+    <script src="highlight.js"></script>
+    <script>
+        hljs.initHighlightingOnLoad();
+    </script>
 </body>
 
 </html>

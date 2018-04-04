@@ -2,20 +2,35 @@
 
 <head>
     <meta charset="utf-8">
-    
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css">
-    
 
-    <title>Maccoda Mail</title>
+    <title>Maccoda Mail - Simple GUI in Relm</title>
+
+    <!-- Bootstrap theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+    <!-- Highlight.js -->
+    <link rel="stylesheet" href="highlight.css">
+    <link rel="stylesheet" href="tomorrow-night.css">
+
+    <link rel="stylesheet" href="made-up.css">
+    <!-- Apply user defined styles last -->
+    
 </head>
 
 <body>
-    <div id="header_wrap" class="inner">
-        <a href="index.html">Home</a>
-    </div>
-    <div id="main_content_wrap" class="outer">
-        <div id="main_content" class="inner">
-            <h1 id="simple-gui-in-relm"> Simple GUI in Relm</h1>
+    <nav class="navbar navbar-default">
+        <div class="navbar-header">
+            <div class="container-fluid">
+                <ul class="nav navbar-nav">
+                    <a class="navbar-brand" href="index.html">Home</a>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <h1 id="simple-gui-in-relm"> Simple GUI in Relm</h1>
 <p>This work stemmed from the article written on <a href="https://www.vandenoever.info/blog/2017/02/17/a-simple-rust-gui-with-qml.html">A Simple Rust GUI with QML</a>
  and reused a bit of the back end there.</p>
 <h2 id="what-is-relm"> What is Relm</h2>
@@ -24,8 +39,7 @@
 <ul><li>The ability to have a declarative nature in which you could define your view</li>
 <li>The simplicity with dealing with a model</li>
 <li>The simplicity of defining the events or messages received</li>
-</ul>
-<p>Of this the biggest winner for me was the abstraction of the model manipulation as I wanted to try a few different frameworks so I could have a go to when writing GUI programs and the difficultly was handling the mutability of your model. This is notion is put in the limelight with Rust due to its borrow checker. However I do want to point out that this is by no means a shortcoming of Rust but rather highlights one of the more common issues in UI and all development is a mutable state which is able to altered from several locations. Anyway Rust fanfare aside, Relm has done a great job in wrapping this complexity to make a very simple library to work with I believe.</p>
+</ul><p>Of this the biggest winner for me was the abstraction of the model manipulation as I wanted to try a few different frameworks so I could have a go to when writing GUI programs and the difficultly was handling the mutability of your model. This is notion is put in the limelight with Rust due to its borrow checker. However I do want to point out that this is by no means a shortcoming of Rust but rather highlights one of the more common issues in UI and all development is a mutable state which is able to altered from several locations. Anyway Rust fanfare aside, Relm has done a great job in wrapping this complexity to make a very simple library to work with I believe.</p>
 <h2 id="getting-our-hands-dirty"> Getting our hands dirty</h2>
 <p>Relm is quite well documented and has several examples that were easy to follow so again I won't repeat these but it was very easy to get a basic example of a button that is able to report when it is clicked an increment a counter.</p>
 <p>One thing I do want to add before we go deeper is that Relm is strongly related to GTK concepts, in particular the widget elements used are GTK widgets. So I would really recommend having at least a reference to it open when working through it if you aren't familiar with the nomenclature of the widgets.</p>
@@ -179,8 +193,7 @@ impl Widget for Win {
 <li>the <code>Root</code>
  element of the application, this is the GTK element that will house the other widgets. For us this is the <code>gtk::Window</code>
 .</li>
-</ul>
-<p>For the notions of <code>Model</code>
+</ul><p>For the notions of <code>Model</code>
  and <code>Root</code>
 , Relm's <code>Widget</code>
  provides a function to construct/access these through the <code>model()</code>
@@ -214,8 +227,7 @@ impl Widget for Win {
  on the event received and have clear separation of our event handling code.</li>
 <li><code>&mut Self::Model</code>
  which will provide mutable access to the model, allowing us to update it if required from the event.</li>
-</ul>
-<h3 id="but-what-about-the-other-code?"> But what about the other code?</h3>
+</ul><h3 id="but-what-about-the-other-code?"> But what about the other code?</h3>
 <p>As you may notice in the gist there is a whole bunch of other code that I had there more related to the construction of the GTK elements. This is heavily based on example code from <code>gtk-rs</code>
  which now has even more documentation so thought could just leave that for the reader to understand XD.</p>
 <h2 id="actually-running-it"> Actually Running It</h2>
@@ -229,9 +241,13 @@ impl Widget for Win {
 <p>That's all for the first post. Hope this has helped!</p>
 
 
-        </div>
-
     </div>
+
+
+    <script src="highlight.js"></script>
+    <script>
+        hljs.initHighlightingOnLoad();
+    </script>
 </body>
 
 </html>

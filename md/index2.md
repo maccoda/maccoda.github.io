@@ -8,34 +8,42 @@ made in Rust, before I discovered [Jekyll](jekyll), so goal is now to improve it
 so that it can build off the work already put into that project (particularly
 themes).
 
-
 [made-up]: https://github.com/maccoda/made-up
 [jekyll]: https://jekyllrb.com/
 
 ----
+
+## [Setting up VSCode as a Note Taking Application](note_taking.html)
+
+How you can set up VSCode to be a useful note taking application rather than
+getting another application just dedicated for notes.
+
+----
+
 ## [Making my first GUI in Relm](relm_gui.html)
 
 Relm is a GUI framework built off GTK and looked like a great candidate for my
 first Rust GUI program.
 
 ----
+
 ## [Cross Compiling Rust](cross_compilation.html)
 
 Looking into how to compile Windows binaries on a Linux machine for Rust.
 
 ----
+
 ## [Binding Raspberry Pi Libraries](rust_raspberrypi.html)
 
-Tackling two main areas that Rust has greatly simplified. Binding to C/C++ libraries and cross compiling for embedded systems (or not too embedded in terms of the Raspberry Pi)
+Tackling two main areas that Rust has greatly simplified. Binding to C/C++
+libraries and cross compiling for embedded systems (or not too embedded in terms
+of the Raspberry Pi)
 
 ----
+
 ## [Rust Documentation Reference](documentation.html)
 
 A very simple reference to help those wishing to add to the Rust documentation
 or for the documentation of your own crates.
 
 ----
-This site is using the [slate][slate] theme for Jekyll
-
-
-[slate]: https://github.com/jsncostello/slate/

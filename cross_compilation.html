@@ -2,20 +2,35 @@
 
 <head>
     <meta charset="utf-8">
-    
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css">
-    
 
-    <title>Maccoda Mail</title>
+    <title>Maccoda Mail - Cross-Compiling Rust (Windows on Linux)</title>
+
+    <!-- Bootstrap theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+    <!-- Highlight.js -->
+    <link rel="stylesheet" href="highlight.css">
+    <link rel="stylesheet" href="tomorrow-night.css">
+
+    <link rel="stylesheet" href="made-up.css">
+    <!-- Apply user defined styles last -->
+    
 </head>
 
 <body>
-    <div id="header_wrap" class="inner">
-        <a href="index.html">Home</a>
-    </div>
-    <div id="main_content_wrap" class="outer">
-        <div id="main_content" class="inner">
-            <h1 id="cross-compiling-rust-(windows-on-linux)"> Cross-Compiling Rust (Windows on Linux)</h1>
+    <nav class="navbar navbar-default">
+        <div class="navbar-header">
+            <div class="container-fluid">
+                <ul class="nav navbar-nav">
+                    <a class="navbar-brand" href="index.html">Home</a>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <h1 id="cross-compiling-rust-(windows-on-linux)"> Cross-Compiling Rust (Windows on Linux)</h1>
 <p>Cross compilation always has an aura about it, being able to develop on one machine and be able to produce executables for all devices. I mean that was Java's selling point "Write it once, run it everywhere" (I probably got that one wrong but you get the point). This was one hurdle for me with Rust as I use a Linux desktop at work but I was to be able to make things that I can give family and friends so that they may benefit from it also. In particular a lot of corporate positions use Windows (myself included) meaning it is difficult to get my executables to work. However after a bit of reading and in particular the <a href="https://github.com/japaric/rust-cross">Cross Repository</a>
  I have managed to get cross compilation for Linux (Ubuntu) to Windows working and thought I would send this one out :).</p>
 <h2 id="building-with-cargo"> Building with Cargo</h2>
@@ -63,9 +78,13 @@ linker = "x86_64-w64-mingw32-gcc"
 </code></pre>
 
 
-        </div>
-
     </div>
+
+
+    <script src="highlight.js"></script>
+    <script>
+        hljs.initHighlightingOnLoad();
+    </script>
 </body>
 
 </html>

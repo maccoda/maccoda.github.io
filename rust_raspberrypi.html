@@ -2,20 +2,35 @@
 
 <head>
     <meta charset="utf-8">
-    
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css">
-    
 
-    <title>Maccoda Mail</title>
+    <title>Maccoda Mail - Binding Raspberry Pi Libraries</title>
+
+    <!-- Bootstrap theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+    <!-- Highlight.js -->
+    <link rel="stylesheet" href="highlight.css">
+    <link rel="stylesheet" href="tomorrow-night.css">
+
+    <link rel="stylesheet" href="made-up.css">
+    <!-- Apply user defined styles last -->
+    
 </head>
 
 <body>
-    <div id="header_wrap" class="inner">
-        <a href="index.html">Home</a>
-    </div>
-    <div id="main_content_wrap" class="outer">
-        <div id="main_content" class="inner">
-            <h1 id="binding-raspberry-pi-libraries"> Binding Raspberry Pi Libraries</h1>
+    <nav class="navbar navbar-default">
+        <div class="navbar-header">
+            <div class="container-fluid">
+                <ul class="nav navbar-nav">
+                    <a class="navbar-brand" href="index.html">Home</a>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <h1 id="binding-raspberry-pi-libraries"> Binding Raspberry Pi Libraries</h1>
 <p>My background with software stemmed from my interest in electronics and embedded software and when I saw that Rust was starting to get some traction in this area I knew that I had to give it a go and see how far I could get.</p>
 <p>To see the actual source referred to in this post you can find it on <a href="https://github.com/maccoda/wiringpi-rs">Github</a>
 </p>
@@ -83,9 +98,13 @@
  the LED was blinking from the Raspberry Pi!</p>
 
 
-        </div>
-
     </div>
+
+
+    <script src="highlight.js"></script>
+    <script>
+        hljs.initHighlightingOnLoad();
+    </script>
 </body>
 
 </html>
