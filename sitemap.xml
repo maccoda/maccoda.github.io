@@ -1,0 +1,53 @@
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    
+        <url>
+            <loc>https://maccoda.github.io/cross-compilation/</loc>
+            
+                <lastmod>2017-05-13</lastmod>
+            
+        </url>
+    
+        <url>
+            <loc>https://maccoda.github.io/documentation/</loc>
+            
+                <lastmod>2017-09-15</lastmod>
+            
+        </url>
+    
+        <url>
+            <loc>https://maccoda.github.io/note-taking/</loc>
+            
+                <lastmod>2018-04-04</lastmod>
+            
+        </url>
+    
+        <url>
+            <loc>https://maccoda.github.io/relm-gui/</loc>
+            
+                <lastmod>2017-05-12</lastmod>
+            
+        </url>
+    
+        <url>
+            <loc>https://maccoda.github.io/rust-raspberrypi/</loc>
+            
+                <lastmod>2017-06-03</lastmod>
+            
+        </url>
+    
+    
+        <url>
+            <loc>https://maccoda.github.io/</loc>
+        </url>
+    
+    
+        <url>
+            <loc>https://maccoda.github.io/categories/</loc>
+        </url>
+    
+    
+        <url>
+            <loc>https://maccoda.github.io/tags/</loc>
+        </url>
+    
+</urlset>
