@@ -1,4 +1,0 @@
-#!/bin/bash
-
-# This just assumes it is on the path for now
-make-up md

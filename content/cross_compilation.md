@@ -1,4 +1,8 @@
-# Cross-Compiling Rust (Windows on Linux)
++++
+date = 2017-05-13
+title = "Cross Compilation for Rust (Windows on Linux)"
+description = "Looking into how to compile Windows binaries on a Linux machine for Rust."
++++
 Cross compilation always has an aura about it, being able to develop on one
 machine and be able to produce executables for all devices. I mean that was
 Java's selling point "Write it once, run it everywhere" (I probably got that one

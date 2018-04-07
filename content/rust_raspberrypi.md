@@ -1,5 +1,8 @@
-# Binding Raspberry Pi Libraries
-
++++
+date = 2017-06-03
+title = "Binding Raspberry Pi Libraries"
+description = "Tackling two main areas that Rust has greatly simplified. Binding to C/C++ libraries and cross compiling for embedded systems (or not too embedded in terms of the Raspberry Pi)"
++++
 My background with software stemmed from my interest in electronics and embedded
 software and when I saw that Rust was starting to get some traction in this area
 I knew that I had to give it a go and see how far I could get.
@@ -23,8 +26,6 @@ Also it would be extremely rude of me not to mention that this work has already
 been done my Ogeon in the crate [rust-wiringpi], so this was more of an exercise
 for myself, but I was very lucky someone had done the hard yards as this
 repository greatly assisted me in the cross compilation aspect of this project.
-
-
 
 ## Bindings
 

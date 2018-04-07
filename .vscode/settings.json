@@ -1,0 +1,7 @@
+{
+  "cSpell.language": "en,en-GB,en-US",
+  "cSpell.enabled": true,
+  "[html]": {
+    "editor.formatOnSave": false
+  }
+}
