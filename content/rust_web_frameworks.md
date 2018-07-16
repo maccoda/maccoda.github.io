@@ -1,7 +1,7 @@
 +++
 date = 2018-05-01
 title = "Making microservices in Rust"
-description = "Trying out some of the frameworks currently available in Rust toput together a microservice"
+description = "Trying out some of the frameworks currently available in Rust to put together a microservice"
 +++
 
 This is a small idea that I have been wanting to put together for quite some
@@ -669,7 +669,7 @@ fn update_task(mut state: State) -> Box<HandlerFuture> {
 
 All in all I hope I could give some really basic use cases for working with
 these frameworks and I hope to keep adding to this and improving the code as I
-go so keep an eye on the [repository][repo] if you are interested. 
+go so keep an eye on the [repository][repo] if you are interested.
 
 The key thing I wanted to try with this exercise was usability of the
 frameworks, not really comparing in terms of performance. I think in this small

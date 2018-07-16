@@ -51,6 +51,7 @@
             {% block content %}
                 <div class="posts">
                     {% for page in section.pages %}
+                      {% if not page.draft %}
                       <div class="post">
                         <h1 class="post-title">
                           <a href="{{ page.permalink }}">
@@ -61,6 +62,7 @@
                         <span class="post-date">{{ page.date | date(format="%Y-%m-%d") }}</span>
                         <span>{{ page.description }}</span>
                       </div>
+                      {% endif %}
                     {% endfor %}
                 </div>
             {% endblock content %}
