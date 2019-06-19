@@ -14,13 +14,18 @@ highlight_code = true
 # Whether to build a search index to be used later on by a JavaScript library
 build_search_index = false
 
+taxonomies = [
+    {name = "tags"},
+    {name = "blog_series"}
+]
+
 theme = "hyde"
 
 [extra]
 hyde_theme = "theme-base-09"
 hyde_reverse = true
 hyde_links = [
-    {url = "https://maccoda.github.io", name = "Home"},
+    {url = "/", name = "Home"},
     {url = "https://github.com/maccoda", name = "GitHub"},
     {url = "https://twitter.com/maccoda52", name= "Twitter"}
 ]

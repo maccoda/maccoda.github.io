@@ -1,7 +1,11 @@
 +++
 date = 2019-06-15
 title = "Why would I even use dependency injection?"
-description = "Walk through my learning experience as to why I do not want to use the new keyword everywhere"
+description = "A short walkthrough of dependency injection and why you should use it"
+[taxonomies]
+tags = ["dependency injection"]
+blog_series = ["software concepts"]
+
 +++
 
 I was inspired to write this post and hopefully a little series on some of these key concepts of
@@ -31,14 +35,15 @@ injection as:
 So this is pretty good and correct, assuming you understand the concept to begin with. So let's try
 break it down a bit.
 
-I first learnt this with Java, so one simple trick to think of dependency injection is moving all
-of the `new` keywords out of your classes. Now this is a pretty dumb thing to say because something
+I first learnt this with Java, so one simple trick to think of dependency injection is moving all of
+the `new` keywords out of your classes. Now this is a pretty dumb thing to say because something
 obviously has to instantiate your classes and that is entirely correct but the point of dependency
 injection is to create that separation between where your classes and their dependencies are
 instantiated and where you write the fun problem solving logic. So the concept of dependency
-injection is being able to give your classes their dependencies rather than them instantiating them
-themselves. A term you will hear a lot around this topic is Inversion of Control (IOC). You are now
-giving control of what your classes dependencies are to a class higher up the chain.
+injection is being able to **give** your classes their dependencies rather than you class
+instantiating its own dependencies. A term you will hear a lot around this topic is Inversion of
+Control (IOC). You are now giving control of what your classes dependencies are to a class higher up
+the chain.
 
 Don't worry there is a lot of writing here and my description is arguably confusing in itself but I
 will clarify this with some examples soon! So stick with me!
@@ -75,8 +80,7 @@ public class ShoppingCart {
 ```
 
 So as you can see this shopping cart implementation needs to have a `CreditCard` to charge and some
-`LineItems` to define how much to charge (an actual shopping cart has a lot more to consider but
-this will do for example purposes). Therefore it is pretty easy to see that the dependencies of
+`LineItems` to define how much to charg. Therefore it is pretty easy to see that the dependencies of
 `ShoppingCart` are `CreditCard` and `LineItems`. A pretty easy way to see this in Java is they will
 be fields of the class, you really only define a field if you need to use it perform some taks.
 
@@ -114,38 +118,37 @@ public class Factory {
 }
 ```
 
-Now we have cleanly separated our creation code from our domain logic code. Which is another topic
-to discuss altogether, but in doing this it has provided us dependency injection as you can see our
-`ShoppingCart` no longer has any `new` keywords!
+Now we have separated our creation code from our domain logic code. In doing this it has provided us
+dependency injection as you can see our `ShoppingCart` no longer has any `new` keywords!
 
 ## Why Dependency Injection?
 
 The most obvious question now is, "Why would I do that? That looks like more code!". This is indeed
-correct we do have more code but the number of lines you have written is never a single indicator of
+correct we do have more code but the number of lines you have written is never a sole indicator of
 the quality of the code. Instead what you should be looking at is "Has this made it easier for me to
 change the code as requirements change?" or "Is this code easily testable?". Making our code use
 dependency injection has allowed us to say yes on both of those fronts.
 
 ### Changing with Requirements or Design
 
-The biggest achievement we have made is we are now coding to an interface. That is `ShoppingCart`
-doesn't need to know anything about how `CreditCard` or `LineItems` work under the hood, or if they
-are even concrete classes. All it needs to know is that it can call `charge` and `total` on them
-respectively. Therefore if we only supported one type of credit card and we needed to add another
-one, so long as it implements `charge` for the `CreditCard` interface our `ShoppingClass` need not
-change.
+The biggest achievement we have made is we are now able to develop to an interface. That is,
+`ShoppingCart` doesn't need to know anything about how `CreditCard` or `LineItems` work under the
+hood, or if they are even concrete classes. All it needs to know is that it can call `charge` and
+`total` on them respectively. Therefore if we only supported one type of credit card and we needed
+to add another one, so long as it implements `charge` for the `CreditCard` interface our
+`ShoppingCart` need not change.
 
 In a different direction, if the design of `LineItems` were to change and it needed something
-different to construct our `ShoppingCart` is now unaffected. Again in this scenario it does not need
-to change at all and the only place it needs to change is where we create it.
+different to construct itself, our `ShoppingCart` is now unaffected. The only place it needs to
+change is where we create it.
 
 ### Testability
 
 Something else that dependency injection has aided with is making tests easier to write. If we had
-of kept it the old way testing `ShoppingCart` would be near impossible without needing to charge an
-actual card. To avoid this we would need to use reflection to inject a mock and capture all the
-interactions, doable but more complicated. Now we can simply make a test double that looks like a
-`CreditCard` and then capture the interactions on that.
+of kept it the old way, testing `ShoppingCart` would be near impossible without needing to charge an
+actual credit card. To avoid this we would need to use reflection to inject a mock and capture all
+the interactions, doable but more complicated than it need be. Now we can simply make a test double
+that looks like a `CreditCard` and then capture the interactions on that.
 
 ## Finishing Up
 
@@ -153,12 +156,3 @@ Hopefully through this very basic example you can see how you can use dependency
 current work as well as how it is helpful. As with a lot of these practices it is hard to see the
 benefit in the small scale but once your system grows and the number of moving parts increases its
 value becomes apparent.
-
-*P.S. Also as a side note, you will come across different ways of implementing dependency injection,
-especially in Java with Spring. You will see that it can actually inject on a private field, through
-a setter, or through a constructor like we have done. In a future post I would like to delve into
-this further but as a quick one, I personally believe you should only be using the contructor flavor
-of it. The private field version means you are relying too heavily on the framework and reflection
-and the setter method forces mutability. I apologize for this opinioned chunk here and I do hope to
-explain both of those further in separate post. However as with most things in software, so many
-things are subjective, so this is my personal opinion it is not fact.*
