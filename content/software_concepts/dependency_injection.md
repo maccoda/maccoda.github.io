@@ -80,9 +80,9 @@ public class ShoppingCart {
 ```
 
 So as you can see this shopping cart implementation needs to have a `CreditCard` to charge and some
-`LineItems` to define how much to charg. Therefore it is pretty easy to see that the dependencies of
+`LineItems` to define how much to charge. Therefore it is pretty easy to see that the dependencies of
 `ShoppingCart` are `CreditCard` and `LineItems`. A pretty easy way to see this in Java is they will
-be fields of the class, you really only define a field if you need to use it perform some taks.
+be fields of the class, you really only define a field if you need to use it perform some tasks.
 
 However there are `new` keywords here so you can see the dependencies are not injected into
 `ShoppingCart`, rather `ShoppingCart` knows exactly how to create its dependencies. It knows it
