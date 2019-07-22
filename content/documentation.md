@@ -1,8 +1,7 @@
 +++
 date = 2017-09-15
 title = "Writing Rust Documentation"
-description = "A very simple reference to help those wishing to add to the Rust documentation or for
-the documentation of your own crates."
+description = "A simple reference for Rust documentation of your own crates."
 [taxonomies]
 tags = ["rust", "documentation"]
 +++
