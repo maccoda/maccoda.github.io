@@ -2,6 +2,8 @@
 date = 2017-06-03
 title = "Binding Raspberry Pi Libraries"
 description = "Tackling two main areas that Rust has greatly simplified. Binding to C/C++ libraries and cross compiling for embedded systems (or not too embedded in terms of the Raspberry Pi)"
+[taxonomies]
+tags = ["rust", "raspberry pi"]
 +++
 My background with software stemmed from my interest in electronics and embedded
 software and when I saw that Rust was starting to get some traction in this area

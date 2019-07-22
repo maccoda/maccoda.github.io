@@ -1,14 +1,1 @@
-<ul>
-    {% for tax in terms %}
-    <li>
-        {{tax.name}}
-        <ul>
-            {% for page in tax.pages%}
-            <li>
-                {{page.title}}
-            </li>
-            {% endfor %}
-        </ul>
-    </li>
-    {% endfor %}
-</ul>
+{% extends "taxonomies.html" %}

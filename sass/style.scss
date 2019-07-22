@@ -1,0 +1,13 @@
+.flex-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end
+}
+
+.float-right {
+    flex-grow: 1;
+}
+
+.heading {
+    flex-grow: 2;
+}

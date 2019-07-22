@@ -1,0 +1,52 @@
+{% extends "hyde/templates/index.html" %}
+
+{% block extra_head %}
+<!-- Google Analytics -->
+<script>
+    (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+            (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date(); a = s.createElement(o),
+            m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+
+    ga('create', 'UA-80531732-2 ', 'auto');
+    ga('send', 'pageview');
+</script>
+<!-- End Google Analytics -->
+<link rel="stylesheet" href="{{ get_url(path="style.css", trailing_slash=false) }}">
+
+{% endblock extra_head %}
+
+{% block sidebar_nav %}
+    {% for link in config.extra.hyde_links %}
+        <li><a href="{{link.url}}">{{link.name}}</a></li>
+    {% endfor %}
+{% endblock sidebar_nav %}
+
+{% block content %}
+{% block top_bar %}
+<div class="flex-container">
+    <h3 class="heading">All posts</h3>
+    <a class="float-right" href="/tags">tags</a>
+</div>
+<hr/>
+{% endblock top_bar %}
+<div class="posts">
+    {% for page in section.pages %}
+        {% if not page.draft %}
+            <div class="post">
+                <h2 class="post-title">
+                    <a href="{{ page.permalink }}">
+                        {{ page.title }}
+                    </a>
+                </h2>
+
+                <span class="post-date">{{ page.date | date(format="%Y-%m-%d") }} - {{
+                page.reading_time }} mins read</span>
+                <span>{{ page.description }}</span>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endblock content %}

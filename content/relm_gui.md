@@ -2,6 +2,8 @@
 date = 2017-05-12
 title = "Simple GUI in Relm"
 description = "Relm is a GUI framework built off GTK and looked like a great candidate for my first Rust GUI program."
+[taxonomies]
+tags = ["rust", "gui"]
 +++
 This work stemmed from the article written on [A Simple Rust GUI with
 QML][qml-article] and reused a bit of the back end there.

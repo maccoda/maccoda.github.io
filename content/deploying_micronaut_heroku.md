@@ -2,6 +2,8 @@
 date = 2019-03-11
 title = "Deploying Micronaut Application to Heroku"
 description = "Deploying your hobby Micronaut projects"
+[taxonomies]
+tags = ["micronaut", "heroku", "deployment"]
 +++
 
 [Micronaut] is a great JVM framework I was recently introduced to. It has been

@@ -2,6 +2,8 @@
 date = 2018-07-16
 title = "How was I so wrong about CI and what I learnt about CD"
 description = "Looking into exactly what is the whole notion of CI vs CD vs CD"
+[taxonomies]
+tags = ["CI", "CD"]
 +++
 
 My knowledge of Continuous Integration (CI) and Continuous Delivery (CD) had so

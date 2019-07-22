@@ -1,7 +1,10 @@
 +++
 date = 2018-05-01
 title = "Making microservices in Rust"
-description = "Trying out some of the frameworks currently available in Rust to put together a microservice"
+description = "Trying out some of the frameworks currently available in Rust to put together a
+microservice"
+[taxonomies]
+tags = ["rust", "frameworks"]
 +++
 
 This is a small idea that I have been wanting to put together for quite some

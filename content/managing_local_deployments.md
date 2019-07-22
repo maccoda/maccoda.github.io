@@ -2,6 +2,8 @@
 date = 2019-03-11
 title = "Managing Local Heroku Deployments"
 description = "Likely overkill to ensure you know what you have deployed"
+[taxonomies]
+tags = ["heroku", "deployment"]
 +++
 
 Recently I have using [Heroku] a fair bit on a hobby project I am working on and

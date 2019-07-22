@@ -1,0 +1,21 @@
+{% extends "index.html" %}
+
+{% block content %}
+<h1>{{ taxonomy.name | capitalize }}</h1>
+<ul>
+    {% for term in terms %}
+    <li>
+        {{term.name | capitalize}}
+        <ul>
+            {% for page in term.pages%}
+            <li>
+                <a href="{{ page.permalink }}">
+                    {{page.title}}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock content %}

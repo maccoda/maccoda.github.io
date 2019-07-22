@@ -1,7 +1,10 @@
 +++
 date = 2017-09-15
 title = "Writing Rust Documentation"
-description = "A very simple reference to help those wishing to add to the Rust documentation or for the documentation of your own crates."
+description = "A very simple reference to help those wishing to add to the Rust documentation or for
+the documentation of your own crates."
+[taxonomies]
+tags = ["rust", "documentation"]
 +++
 Personally I have found Rust documentation to be great and very easy to follow.
 Further I really enjoy that I can easily access the source code from the

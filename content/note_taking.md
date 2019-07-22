@@ -2,6 +2,8 @@
 date = 2018-04-04
 title = "Note Taking in Visual Studio Code"
 description = "How you can set up VSCode to be a useful note taking application rather than getting another application just dedicated for notes."
+[taxonomies]
+tags = ["notes"]
 +++
 - [Note Taking in VSCode](#note-taking-in-vscode)
     - [Visual Studio Code](#visual-studio-code)
