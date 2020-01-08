@@ -25,7 +25,7 @@ theme = "hyde"
 
 [extra]
 hyde_theme = "theme-base-09"
-hyde_reverse = true
+hyde_reverse = false
 hyde_links = [
     {url = "/", name = "Home"},
     {url = "https://github.com/maccoda", name = "GitHub"},
