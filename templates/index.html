@@ -16,6 +16,8 @@
 <!-- End Google Analytics -->
 <link rel="stylesheet" href="{{ get_url(path="style.css", trailing_slash=false) }}">
 
+<script src="/mermaid.min.js"></script>
+
 {% endblock extra_head %}
 
 {% block sidebar_nav %}
@@ -50,4 +52,5 @@
         {% endif %}
     {% endfor %}
 </div>
+<script>mermaid.initialize({ startOnLoad: true });</script>
 {% endblock content %}

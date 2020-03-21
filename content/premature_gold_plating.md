@@ -25,7 +25,6 @@ In my opinion one of the core pieces and that which I wanted to share some thoug
 iterative versus upfront design. In particular my experience with this in a team working with Kanban
 and how important it is reflect on your working process to avoid eventually grinding to a glacial
 speed.
-<!-- Maybe we should determine if we want to focus on gold plating or agile -->
 
 ## Iterative vs upfront design
 
