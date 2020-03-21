@@ -2,7 +2,6 @@
 date = 2020-03-07
 title = "Don't fret over it not being perfect"
 description = "In software we should be accept and utilize that we do not need to have our solution perfect before we can even write our first line of code"
-draft = true
 [taxonomies]
 tags = ["iterative development", "development process"]
 +++
