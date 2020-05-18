@@ -79,8 +79,8 @@ data class FullName private constructor(val firstName: String, val lastName: Str
     companion object {
         fun of(firstName: String, lastName: String): FullName {
             if(firstName.isBlank() || lastName.isBlank()) {
-            	throw RuntimeException("Name cannot be blank")
-        	}
+                throw RuntimeException("Name cannot be blank")
+            }
             return FullName(firstName, lastName)
         }
     }
@@ -105,13 +105,13 @@ I have not been able to test how this works with Java interoperability but this 
 the best of the above two solutions.
 
 ```kotlin
-data class FullName	private constructor(val firstName: String, val lastName: String) {
+data class FullName private constructor(val firstName: String, val lastName: String) {
 
     companion object {
         operator fun invoke(firstName: String, lastName: String): FullName {
             if(firstName.isBlank() || lastName.isBlank()) {
-            	throw RuntimeException("Name cannot be blank")
-        	}
+                throw RuntimeException("Name cannot be blank")
+            }
             return FullName(firstName, lastName)
         }
     }
