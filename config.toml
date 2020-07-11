@@ -26,8 +26,7 @@ theme = "hyde"
 [extra]
 hyde_theme = "theme-base-09"
 hyde_links = [
-    {url = "/", name = "Home"},
-    {url = "https://github.com/maccoda", name = "GitHub"},
-    {url = "https://gitlab.com/maccoda", name = "Gitlab"},
-    {url = "https://twitter.com/maccoda52", name= "Twitter"}
+    {url = "https://github.com/maccoda", name = "GitHub", src = "/images/GitHub-Mark-32px.png"},
+    {url = "https://gitlab.com/maccoda", name = "Gitlab", src = "/images/gitlab-icon-1-color-black-rgb.svg"},
+    {url = "https://dev.to/maccoda", name = "Dev.to blog", src = "https://d2fltix0v2e0sb.cloudfront.net/dev-badge.svg"},
 ]

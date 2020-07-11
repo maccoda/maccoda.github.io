@@ -9,7 +9,9 @@
 
 {% block sidebar_nav %}
     {% for link in config.extra.hyde_links %}
-        <li><a href="{{link.url}}">{{link.name}}</a></li>
+        <a href="{{link.url}}" style="display: inline-block;">
+            <img src="{{link.src}}" alt={{link.name}} height="30" width="30"/>
+        </a>
     {% endfor %}
 {% endblock sidebar_nav %}
 
