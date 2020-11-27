@@ -4,7 +4,7 @@ title = "Introduction to Layered Architecture"
 description = "An introduction to the layered architecture approach for organizing software projects"
 [taxonomies]
 tags = ["architecture"]
-blog_series = ["software_concepts"]
+blog_series = ["software concepts"]
 +++
 
 The inspiration of this post is I have worked with a few interns lately and the biggest sticking
