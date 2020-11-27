@@ -1,13 +1,12 @@
 +++
 date = 2020-10-11
 title = "Common traps to avoid when using feature toggles"
-draft = true
 description = "Feature toggles are a great tool but can easily be misused. In this article I go through some of the poor uses of feature toggles that have made them a bit more painful than useful"
 [taxonomies]
 tags = ["feature toggle", "feature flag"]
 +++
 
-In a previous blog post I discussed the benefits of feature toggles and how they unlock the ability to have true continuous delivery. As with everything there are certainly ways in which you should not use these or traps to avoid that I wanted to share also.
+In a [previous blog](/software_concepts/feature_toggles_intro) post I discussed the benefits of feature toggles and how they unlock the ability to have true continuous delivery. As with everything there are certainly ways in which you should not use these or traps to avoid that I wanted to share also.
 
 ## Aim for short lived toggles
 
