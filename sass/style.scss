@@ -5,9 +5,13 @@
 }
 
 .float-right {
-    flex-grow: 1;
+    flex-grow: 2;
 }
 
 .heading {
-    flex-grow: 2;
+    flex-grow: 10;
+}
+
+.rss-image {
+    flex-grow: 0.5;
 }
