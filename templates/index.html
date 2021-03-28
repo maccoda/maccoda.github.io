@@ -7,7 +7,8 @@
 
 <script src="https://getinsights.io/static/js/insights.js"></script>
 <script>
-    insights.init('yov5Y1hNA4UC4Hu0');
+    var locationString = window.location.toString();
+    insights.init('yov5Y1hNA4UC4Hu0', { disabled: locationString.includes('localhost') || locationString.includes('127.0.0.1')});
     insights.trackPages();
 </script>
 
