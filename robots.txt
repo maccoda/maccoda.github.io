@@ -1,0 +1,2 @@
+User-agent: *
+Sitemap: https://maccoda.github.io/sitemap.xml

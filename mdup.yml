@@ -1,0 +1,4 @@
+gen_index: false
+out_dir: "."
+copy_resources: false
+title: "Maccoda Mail"

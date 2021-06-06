@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+      <!-- Enable responsiveness on mobile devices-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+      <title>Maccoda Mail</title>
+
+      <!-- CSS -->
+      <link rel="stylesheet" href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;print.css" media="print">
+      <link rel="stylesheet" href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;poole.css">
+      <link rel="stylesheet" href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;hyde.css">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+      
+
+      
+<link rel="stylesheet" href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;style.css">
+
+<script src="/mermaid.min.js"></script>
+
+<script src="https://getinsights.io/static/js/insights.js"></script>
+<script>
+    var locationString = window.location.toString();
+    insights.init('yov5Y1hNA4UC4Hu0', { disabled: locationString.includes('localhost') || locationString.includes('127.0.0.1')});
+    insights.trackPages();
+</script>
+
+
+    </head>
+
+    <body class="theme-base-09 ">
+        
+            <div class="sidebar">
+                <div class="container sidebar-sticky">
+                    <div class="sidebar-about">
+                        
+                            <a href="https:&#x2F;&#x2F;maccoda.github.io"><h1>Maccoda Mail</h1></a>
+                            
+                            <p class="lead">Sending out some thoughts and learnings</p>
+                            
+                        
+                    </div>
+
+                    <ul class="sidebar-nav">
+                        
+    
+        <a href="https:&#x2F;&#x2F;github.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;GitHub-Mark-32px.png" alt=GitHub height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;gitlab.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;gitlab-icon-1-color-black-rgb.svg" alt=Gitlab height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;dev.to&#x2F;maccoda" style="display: inline-block;">
+            <img src="https:&#x2F;&#x2F;d2fltix0v2e0sb.cloudfront.net&#x2F;dev-badge.svg" alt=Dev.to blog height="30" width="30"/>
+        </a>
+    
+
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div class="content container">
+            
+<a href="..">▲ up</a>
+<div class="post">
+    <h1 class="post-title">Making microservices in Rust</h1>
+    <span class="post-date">2018-05-01 - 17 mins read</span>
+    <p>This is a small idea that I have been wanting to put together for quite some
+time now and finally have managed to get the time and most importantly
+experience in Rust to finally try something a little more than just small
+projects. One area that I think Rust is really making a decent headway in in the
+web domain, which I am assuming is likely due to its origin from Firefox. So I
+wanted to see if I could put together a really basic CRUD micro-service doing
+the ever so original TODO functionality.</p>
+<p>My main goal from this project was to be able to try some larger scale crates
+available in the Rust ecosystem and perform some more typical enterprise
+activities of working with databases and HTTP requests in Rust, something I have
+usually been steering clear of. Further to this, I was really hoping that I
+could help some of these frameworks grow with some more examples of how to put
+them all together so hopefully can make it easier to pick up for new comers.</p>
+<p>If you aren't up for the read and would just like the code go check out the <a href="https://github.com/maccoda/micro-rs">repository</a>.</p>
+<p>So what were the frameworks that I wanted to explore?</p>
+<h2 id="diesel">Diesel</h2>
+<p><a href="https://diesel.rs/">Diesel</a> is one of the more popular <a href="https://en.wikipedia.org/wiki/Object-relational_mapping">ORM</a> in the Rust community. It has some
+great documentation to get set up and to understand how to use it. It also comes
+with a very handy CLI tool to assist in the setting up of a project and managing
+database migrations, which is great for keeping everything nice and uniform and
+automated. A great combination indeed!</p>
+<p>The <a href="http://diesel.rs/guides/getting-started/">getting started guide</a> for Diesel
+provides a solid foundation on how to put it all together so I won't try rewrite
+that, rather provide a light overview of the steps to be able to reproduce.</p>
+<h3 id="setting-up-the-migrations">Setting up the migrations</h3>
+<p>Following the guide the CLI tool will create an <code>up.sql</code> and <code>down.sql</code> in the
+<code>migrations</code> directory to handle our initial database migration.</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ccc9c2;">$ diesel migration generate tasks
+</span></code></pre>
+<p>This will generate the files and place them into a time stamped directory,
+appended with the name of the migration we gave, which was <code>tasks</code>. In here we
+want to put the SQL query to create our table and the opposing query to undo the
+change.</p>
+<p><code>up.sql</code></p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">CREATE TABLE </span><span style="color:#ffd580;">tasks</span><span style="color:#ccc9c2;"> (
+  id </span><span style="color:#ffa759;">SERIAL PRIMARY KEY</span><span style="color:#ccc9c2;">,
+  task </span><span style="color:#ffa759;">VARCHAR </span><span style="color:#f29e74;">NOT </span><span style="color:#ffcc66;">NULL</span><span style="color:#ccc9c2;">,
+  completed </span><span style="color:#ffa759;">BOOLEAN </span><span style="color:#f29e74;">NOT </span><span style="color:#ffcc66;">NULL </span><span style="color:#ffa759;">DEFAULT </span><span style="color:#bae67e;">&#39;f&#39;
+</span><span style="color:#ccc9c2;">)
+</span></code></pre>
+<p><code>down.sql</code></p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">DROP TABLE</span><span style="color:#ccc9c2;"> tasks
+</span></code></pre><h3 id="adding-the-models">Adding the Models</h3>
+<p>Following the remainder of the guide we get to develop the model of our Tasks
+which then allows us to use the CLI tool to generate our schema.</p>
+<p>We want to follow the recommended guide of having one type to represent the
+structure we want to query from the database and one type to represent the
+structure to insert into the database. These will be <code>Task</code> and <code>NewTask</code>
+respectively and will be put in the <code>model</code> module.</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ccc9c2cc;">#</span><span style="color:#ccc9c2;">[</span><span style="color:#ffd580;">derive</span><span style="color:#ccc9c2;">(Queryable)]
+</span><span style="color:#ffa759;">pub struct </span><span style="color:#73d0ff;">Task </span><span style="color:#ccc9c2;">{
+    id</span><span style="color:#ccc9c2cc;">: </span><span style="color:#ffa759;">i32</span><span style="color:#ccc9c2;">,
+    task</span><span style="color:#ccc9c2cc;">:</span><span style="color:#ccc9c2;"> String,
+    completed</span><span style="color:#ccc9c2cc;">: </span><span style="color:#ffa759;">bool</span><span style="color:#ccc9c2;">,
+}
+
+</span><span style="color:#ccc9c2cc;">#</span><span style="color:#ccc9c2;">[</span><span style="color:#ffd580;">derive</span><span style="color:#ccc9c2;">(Insertable)]
+</span><span style="color:#ccc9c2cc;">#</span><span style="color:#ccc9c2;">[</span><span style="color:#ffd580;">table_name </span><span style="color:#f29e74;">= </span><span style="color:#bae67e;">&quot;tasks&quot;</span><span style="color:#ccc9c2;">]
+</span><span style="color:#ffa759;">pub struct </span><span style="color:#73d0ff;">NewTask </span><span style="color:#ccc9c2;">{
+    task</span><span style="color:#ccc9c2cc;">:</span><span style="color:#ccc9c2;"> String,
+    completed</span><span style="color:#ccc9c2cc;">: </span><span style="color:#ffa759;">bool</span><span style="color:#ccc9c2;">,
+}
+</span></code></pre><h3 id="generating-the-schema">Generating the Schema</h3>
+<p>Once we have set up the models we can then go back again to the Diesel CLI to
+generate the schema for us which will provide the DSL that we will interact
+with.</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ccc9c2;">$ diesel print-schema &gt; src/schema.rs
+</span></code></pre>
+<p>This will look at our source code and locate the <code>struct</code>s that are <code>Queryable</code>
+to determine the shape of our data. The resulting <code>schema.rs</code> should look like
+the following:</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#f28779;">table! </span><span style="color:#ccc9c2;">{
+    tasks (id) {
+        id </span><span style="color:#ccc9c2cc;">-&gt;</span><span style="color:#ccc9c2;"> Integer</span><span style="color:#ccc9c2cc;">,
+</span><span style="color:#ccc9c2;">        task </span><span style="color:#ccc9c2cc;">-&gt;</span><span style="color:#ccc9c2;"> Varchar</span><span style="color:#ccc9c2cc;">,
+</span><span style="color:#ccc9c2;">        completed </span><span style="color:#ccc9c2cc;">-&gt;</span><span style="color:#ccc9c2;"> Bool</span><span style="color:#ccc9c2cc;">,
+    </span><span style="color:#ccc9c2;">}
+}
+</span></code></pre><h3 id="adding-the-functionality">Adding the Functionality</h3>
+<p>The final part to the database aspect of our micro-service is to provide some
+functionality on interacting with the database with the CRUD operations. My
+implementation is a very basic one to allow me to associate these interactions
+with the model type.</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">impl </span><span style="color:#73d0ff;">Task </span><span style="color:#ccc9c2;">{
+    </span><span style="color:#ffa759;">pub fn </span><span style="color:#ffd580;">all</span><span style="color:#ccc9c2;">(</span><span style="color:#ffcc66;">conn</span><span style="color:#ccc9c2cc;">: </span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">PgConnection) </span><span style="color:#ccc9c2cc;">-&gt; </span><span style="font-style:italic;color:#5ccfe6;">Vec</span><span style="color:#ccc9c2;">&lt;Task&gt; {
+        </span><span style="color:#ffa759;">use </span><span style="color:#ccc9c2;">schema</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">tasks</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">dsl</span><span style="color:#f29e74;">::*</span><span style="color:#ccc9c2cc;">;
+</span><span style="color:#ccc9c2;">        tasks</span><span style="color:#f29e74;">.</span><span style="color:#ccc9c2;">load</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">&lt;Task&gt;(conn)</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">expect</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;Could not load tasks&quot;</span><span style="color:#ccc9c2;">)
+    }
+
+    </span><span style="color:#ffa759;">pub fn </span><span style="color:#ffd580;">create</span><span style="color:#ccc9c2;">(</span><span style="color:#ffcc66;">conn</span><span style="color:#ccc9c2cc;">: </span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">PgConnection, </span><span style="color:#ffcc66;">task</span><span style="color:#ccc9c2cc;">:</span><span style="color:#ccc9c2;"> NewTask) {
+        </span><span style="color:#ffa759;">use </span><span style="color:#ccc9c2;">schema</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">tasks</span><span style="color:#ccc9c2cc;">;
+        </span><span style="color:#ccc9c2;">diesel</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">insert_into(tasks</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">table)
+            </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">values</span><span style="color:#ccc9c2;">(</span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">task)
+            </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">execute</span><span style="color:#ccc9c2;">(conn)
+            </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">expect</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;Unable to insert&quot;</span><span style="color:#ccc9c2;">)</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ccc9c2;">}
+
+    </span><span style="color:#ffa759;">pub fn </span><span style="color:#ffd580;">update</span><span style="color:#ccc9c2;">(</span><span style="color:#ffcc66;">conn</span><span style="color:#ccc9c2cc;">: </span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">PgConnection, </span><span style="color:#ffcc66;">task_id</span><span style="color:#ccc9c2cc;">: </span><span style="color:#ffa759;">i32</span><span style="color:#ccc9c2;">, </span><span style="color:#ffcc66;">task_update</span><span style="color:#ccc9c2cc;">:</span><span style="color:#ccc9c2;"> Task) </span><span style="color:#ccc9c2cc;">-&gt; </span><span style="color:#ffa759;">i32 </span><span style="color:#ccc9c2;">{
+        </span><span style="color:#ffa759;">use </span><span style="color:#ccc9c2;">schema</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">tasks</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">dsl</span><span style="color:#f29e74;">::*</span><span style="color:#ccc9c2cc;">;
+        </span><span style="color:#ccc9c2;">diesel</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">update(tasks</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">find</span><span style="color:#ccc9c2;">(task_id))
+            </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">set</span><span style="color:#ccc9c2;">((
+                task</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">eq</span><span style="color:#ccc9c2;">(task_update</span><span style="color:#f29e74;">.</span><span style="color:#ccc9c2;">task)</span><span style="color:#ccc9c2cc;">,
+</span><span style="color:#ccc9c2;">                completed</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">eq</span><span style="color:#ccc9c2;">(task_update</span><span style="color:#f29e74;">.</span><span style="color:#ccc9c2;">completed)</span><span style="color:#ccc9c2cc;">,
+            </span><span style="color:#ccc9c2;">))
+            </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">execute</span><span style="color:#ccc9c2;">(conn)
+            </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">expect</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;Failed to update&quot;</span><span style="color:#ccc9c2;">)</span><span style="color:#ccc9c2cc;">;
+</span><span style="color:#ccc9c2;">        task_update</span><span style="color:#f29e74;">.</span><span style="color:#ccc9c2;">id
+    }
+
+    </span><span style="color:#ffa759;">pub fn </span><span style="color:#ffd580;">delete</span><span style="color:#ccc9c2;">(</span><span style="color:#ffcc66;">conn</span><span style="color:#ccc9c2cc;">: </span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">PgConnection, </span><span style="color:#ffcc66;">task_id</span><span style="color:#ccc9c2cc;">: </span><span style="color:#ffa759;">i32</span><span style="color:#ccc9c2;">) {
+        </span><span style="color:#ffa759;">use </span><span style="color:#ccc9c2;">schema</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">tasks</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">dsl</span><span style="color:#f29e74;">::*</span><span style="color:#ccc9c2cc;">;
+        </span><span style="color:#ccc9c2;">diesel</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">delete(tasks</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">find</span><span style="color:#ccc9c2;">(task_id))
+            </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">execute</span><span style="color:#ccc9c2;">(conn)
+            </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">expect</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;Failed to delete&quot;</span><span style="color:#ccc9c2;">)</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ccc9c2;">}
+}
+</span></code></pre>
+<p>The above code shows a few different ways in which we can use the generated DSL
+to work with our data, or in the case of the <code>create</code> function, how we can use
+it without the DSL.</p>
+<p>Note that it is important that the DSL is only imported on the function scope
+and that when doing this ensure that the function parameters don't match any
+column in the schema to avoid any unexpected shadowing.</p>
+<h2 id="rocket">Rocket</h2>
+<p><a href="https://rocket.rs/">Rocket</a> is quite a popular web framework, for several reasons but one
+of course is the well polished website! It is pretty easy to get started with
+and handles a lot of the boiler plate through its powerful use of macros. This
+part of the project I cannot claim I developed a lot for as it does have a great
+<a href="https://rocket.rs/guide/state/#databases">tutorial</a> on the website for how to use Rocket with Diesel. So
+I will just provide some basic changes to this that I ended up applying.</p>
+<p>The first thing being that I wanted to use PostgreSQL which wasn't covered in
+the tutorial. This was a very minor deviation from the tutorial however because
+it was mainly handled in the Diesel section of the code which was already
+described previously. The biggest change here was changing the features that
+Diesel was compiled with:</p>
+<p><code>Cargo.toml</code></p>
+<pre style="background-color:#212733;">
+<code><span style="color:#73d0ff;">diesel </span><span style="color:#ccc9c2;">= { </span><span style="color:#73d0ff;">version </span><span style="color:#ccc9c2;">= </span><span style="color:#bae67e;">&quot;1.0.0&quot;</span><span style="color:#ccc9c2cc;">, </span><span style="color:#73d0ff;">features </span><span style="color:#ccc9c2;">= [</span><span style="color:#bae67e;">&quot;postgres&quot;</span><span style="color:#ccc9c2;">] }
+</span></code></pre>
+<p>The only other chunk related to this was the database connection pool that we used
+which was simply changed to a <code>PgConnection</code>.</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">type </span><span style="color:#73d0ff;">Pool </span><span style="color:#f29e74;">= </span><span style="color:#ccc9c2;">r2d2</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">Pool&lt;ConnectionManager&lt;PgConnection&gt;&gt;</span><span style="color:#ccc9c2cc;">;
+</span></code></pre><h3 id="managing-the-database-connection">Managing the Database Connection</h3>
+<p>From there I was able to follow the tutorial fairly closely. We start by
+ensuring that Rocket manages our database connection pool. This is as simple as
+adding it to <code>ignite</code> function.</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">type </span><span style="color:#73d0ff;">Pool </span><span style="color:#f29e74;">= </span><span style="color:#ccc9c2;">r2d2</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">Pool&lt;ConnectionManager&lt;PgConnection&gt;&gt;</span><span style="color:#ccc9c2cc;">;
+</span><span style="color:#ffa759;">fn </span><span style="color:#ffd580;">init_pool</span><span style="color:#ccc9c2;">() </span><span style="color:#ccc9c2cc;">-&gt;</span><span style="color:#ccc9c2;"> Pool {
+    dotenv</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">dotenv()</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">ok</span><span style="color:#ccc9c2;">()</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ffa759;">let</span><span style="color:#ccc9c2;"> database_url </span><span style="color:#f29e74;">= </span><span style="color:#ccc9c2;">env</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">var(</span><span style="color:#bae67e;">&quot;DATABASE_URL&quot;</span><span style="color:#ccc9c2;">)</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">expect</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;DATABASE_URL must be set&quot;</span><span style="color:#ccc9c2;">)</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ffa759;">let</span><span style="color:#ccc9c2;"> manager </span><span style="color:#f29e74;">= </span><span style="color:#ccc9c2;">ConnectionManager</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">&lt;PgConnection&gt;</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">new(database_url)</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ccc9c2;">r2d2</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">Pool</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">new(manager)</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">expect</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;db pool&quot;</span><span style="color:#ccc9c2;">)
+}
+
+</span><span style="color:#ffa759;">pub fn </span><span style="color:#ffd580;">start</span><span style="color:#ccc9c2;">() {
+    rocket</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">ignite()
+        </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">manage</span><span style="color:#ccc9c2;">(</span><span style="color:#f28779;">init_pool</span><span style="color:#ccc9c2;">())
+        </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">launch</span><span style="color:#ccc9c2;">()</span><span style="color:#ccc9c2cc;">;
+</span><span style="color:#ccc9c2;">}
+</span></code></pre>
+<p>Now that Rocket is managing our state we want to be able to grab that from our
+requests. To do this in Rocket we need to implement the <code>FromRequest</code> trait for
+our database connection.</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">impl</span><span style="color:#ccc9c2;">&lt;</span><span style="color:#ffa759;">&#39;a</span><span style="color:#ccc9c2;">, </span><span style="color:#ffa759;">&#39;r</span><span style="color:#ccc9c2;">&gt; FromRequest&lt;</span><span style="color:#ffa759;">&#39;a</span><span style="color:#ccc9c2;">, </span><span style="color:#ffa759;">&#39;r</span><span style="color:#ccc9c2;">&gt; </span><span style="color:#ffa759;">for </span><span style="color:#73d0ff;">DbConn </span><span style="color:#ccc9c2;">{
+    </span><span style="color:#ffa759;">type </span><span style="color:#73d0ff;">Error </span><span style="color:#f29e74;">= </span><span style="color:#ccc9c2;">()</span><span style="color:#ccc9c2cc;">;
+
+    </span><span style="color:#ffa759;">fn </span><span style="color:#ffd580;">from_request</span><span style="color:#ccc9c2;">(</span><span style="color:#ffcc66;">request</span><span style="color:#ccc9c2cc;">: </span><span style="color:#f29e74;">&amp;</span><span style="color:#ffa759;">&#39;a </span><span style="color:#ccc9c2;">Request&lt;</span><span style="color:#ffa759;">&#39;r</span><span style="color:#ccc9c2;">&gt;) </span><span style="color:#ccc9c2cc;">-&gt; </span><span style="color:#ccc9c2;">request</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">Outcome&lt;DbConn, ()&gt; {
+        </span><span style="color:#ffa759;">let</span><span style="color:#ccc9c2;"> pool </span><span style="color:#f29e74;">=</span><span style="color:#ccc9c2;"> request</span><span style="color:#f29e74;">.</span><span style="color:#ccc9c2;">guard</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">&lt;State&lt;Pool&gt;&gt;()</span><span style="color:#f29e74;">?</span><span style="color:#ccc9c2cc;">;
+        </span><span style="color:#ffa759;">match</span><span style="color:#ccc9c2;"> pool</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">get</span><span style="color:#ccc9c2;">() {
+            </span><span style="font-style:italic;color:#5ccfe6;">Ok</span><span style="color:#ccc9c2;">(conn) </span><span style="color:#f29e74;">=&gt; </span><span style="color:#ccc9c2;">Outcome</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">Success(DbConn(conn))</span><span style="color:#ccc9c2cc;">,
+            </span><span style="font-style:italic;color:#5ccfe6;">Err</span><span style="color:#ccc9c2;">(</span><span style="color:#f29e74;">_</span><span style="color:#ccc9c2;">) </span><span style="color:#f29e74;">=&gt; </span><span style="color:#ccc9c2;">Outcome</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">Failure((Status</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">ServiceUnavailable</span><span style="color:#ccc9c2cc;">, </span><span style="color:#ccc9c2;">()))</span><span style="color:#ccc9c2cc;">,
+        </span><span style="color:#ccc9c2;">}
+    }
+}
+</span></code></pre><h3 id="adding-the-request-handlers">Adding the Request Handlers</h3>
+<p>Essentially the final part of this is to add in the request handlers. Thanks to
+Rocket's code generation this is quite easy to write. For example to add the
+request to return all the tasks the request would look like:</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ccc9c2cc;">#</span><span style="color:#ccc9c2;">[</span><span style="color:#ffd580;">get</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;/&quot;</span><span style="color:#ccc9c2;">)]
+</span><span style="color:#ffa759;">fn </span><span style="color:#ffd580;">get_all_tasks</span><span style="color:#ccc9c2;">(</span><span style="color:#ffcc66;">conn</span><span style="color:#ccc9c2cc;">:</span><span style="color:#ccc9c2;"> DbConn) </span><span style="color:#ccc9c2cc;">-&gt; </span><span style="color:#ccc9c2;">Json&lt;</span><span style="font-style:italic;color:#5ccfe6;">Vec</span><span style="color:#ccc9c2;">&lt;Task&gt;&gt; {
+    Json(Task</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">all(</span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">conn))
+}
+</span></code></pre>
+<p>Then we would update the <code>start</code> function to mount this route:</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">pub fn </span><span style="color:#ffd580;">start</span><span style="color:#ccc9c2;">() {
+    rocket</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">ignite()
+        </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">mount</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;/tasks&quot;</span><span style="color:#ccc9c2cc;">, </span><span style="color:#f28779;">routes!</span><span style="color:#ccc9c2;">[get_all_tasks])
+        </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">manage</span><span style="color:#ccc9c2;">(</span><span style="color:#f28779;">init_pool</span><span style="color:#ccc9c2;">())
+        </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">launch</span><span style="color:#ccc9c2;">()</span><span style="color:#ccc9c2cc;">;
+</span><span style="color:#ccc9c2;">}
+</span></code></pre><h4 id="returning-some-data">Returning Some Data</h4>
+<p>However we have this new <code>Json</code> type that we are returning from our request so
+at the moment this won't compile. Let's go ahead and add that type and make our
+<code>Task</code> model serializable.</p>
+<p><em>Just as side note I wouldn't recommend in practice you have you database
+representation the same the model type returned from your request but for the
+sake of brevity for this walk through I will keep it this way</em></p>
+<p>To obtain the <code>Json</code> type we will add a dependency from Rocket,
+<code>rocket-contrib</code>, adding to our <code>Cargo.toml</code></p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ccc9c2;">[</span><span style="color:#73d0ff;">dependencies</span><span style="color:#ccc9c2cc;">.</span><span style="color:#73d0ff;">rocket_contrib</span><span style="color:#ccc9c2;">]
+</span><span style="color:#73d0ff;">version </span><span style="color:#ccc9c2;">= </span><span style="color:#bae67e;">&quot;0.3.6&quot;
+</span><span style="color:#73d0ff;">default-features </span><span style="color:#ccc9c2;">= </span><span style="color:#ffcc66;">false
+</span><span style="color:#73d0ff;">features </span><span style="color:#ccc9c2;">= [</span><span style="color:#bae67e;">&quot;json&quot;</span><span style="color:#ccc9c2;">]
+</span></code></pre>
+<p>Then we need to make our <code>Task</code> serializable, and our <code>NewTask</code> whilst we are at
+it. To do this we will use <code>serde</code> which is the standard serialization and
+de-serialization crate used in Rust. With a small tweak of our <code>Cargo.toml</code> and
+some added <code>derive</code>s to our type we are done.</p>
+<p><code>Cargo.toml</code></p>
+<pre style="background-color:#212733;">
+<code><span style="color:#73d0ff;">serde </span><span style="color:#ccc9c2;">= </span><span style="color:#bae67e;">&quot;1.0&quot;
+</span><span style="color:#73d0ff;">serde_json </span><span style="color:#ccc9c2;">= </span><span style="color:#bae67e;">&quot;1.0&quot;
+</span><span style="color:#73d0ff;">serde_derive </span><span style="color:#ccc9c2;">= </span><span style="color:#bae67e;">&quot;1.0&quot;
+</span></code></pre>
+<p><code>model.rs</code></p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ccc9c2cc;">#</span><span style="color:#ccc9c2;">[</span><span style="color:#ffd580;">derive</span><span style="color:#ccc9c2;">(Deserialize</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> Serialize</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> Queryable)]
+</span><span style="color:#ffa759;">pub struct </span><span style="color:#73d0ff;">Task </span><span style="color:#ccc9c2;">{
+    id</span><span style="color:#ccc9c2cc;">: </span><span style="color:#ffa759;">i32</span><span style="color:#ccc9c2;">,
+    task</span><span style="color:#ccc9c2cc;">:</span><span style="color:#ccc9c2;"> String,
+    completed</span><span style="color:#ccc9c2cc;">: </span><span style="color:#ffa759;">bool</span><span style="color:#ccc9c2;">,
+}
+
+</span><span style="color:#ccc9c2cc;">#</span><span style="color:#ccc9c2;">[</span><span style="color:#ffd580;">derive</span><span style="color:#ccc9c2;">(Deserialize</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> Serialize</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> Insertable)]
+</span><span style="color:#ccc9c2cc;">#</span><span style="color:#ccc9c2;">[</span><span style="color:#ffd580;">table_name </span><span style="color:#f29e74;">= </span><span style="color:#bae67e;">&quot;tasks&quot;</span><span style="color:#ccc9c2;">]
+</span><span style="color:#ffa759;">pub struct </span><span style="color:#73d0ff;">NewTask </span><span style="color:#ccc9c2;">{
+    task</span><span style="color:#ccc9c2cc;">:</span><span style="color:#ccc9c2;"> String,
+    completed</span><span style="color:#ccc9c2cc;">: </span><span style="color:#ffa759;">bool</span><span style="color:#ccc9c2;">,
+}
+</span></code></pre><h4 id="adding-the-rest-of-the-requests">Adding the Rest of the Requests</h4>
+<p>Following the initial request we can add the remaining operations to create,
+update, and delete tasks.</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ccc9c2cc;">#</span><span style="color:#ccc9c2;">[</span><span style="color:#ffd580;">post</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;/&quot;</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> data </span><span style="color:#f29e74;">= </span><span style="color:#bae67e;">&quot;&lt;task&gt;&quot;</span><span style="color:#ccc9c2;">)]
+</span><span style="color:#ffa759;">fn </span><span style="color:#ffd580;">create_task</span><span style="color:#ccc9c2;">(</span><span style="color:#ffcc66;">task</span><span style="color:#ccc9c2cc;">: </span><span style="color:#ccc9c2;">Json&lt;NewTask&gt;, </span><span style="color:#ffcc66;">conn</span><span style="color:#ccc9c2cc;">:</span><span style="color:#ccc9c2;"> DbConn) </span><span style="color:#ccc9c2cc;">-&gt; </span><span style="color:#ccc9c2;">Json&lt;</span><span style="font-style:italic;color:#5ccfe6;">String</span><span style="color:#ccc9c2;">&gt; {
+    Task</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">create(</span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">conn</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> task</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">into_inner</span><span style="color:#ccc9c2;">())</span><span style="color:#ccc9c2cc;">;
+</span><span style="color:#ccc9c2;">    Json(</span><span style="color:#bae67e;">&quot;Task added&quot;</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">to_owned</span><span style="color:#ccc9c2;">())
+}
+
+</span><span style="color:#ccc9c2cc;">#</span><span style="color:#ccc9c2;">[</span><span style="color:#ffd580;">put</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;/&lt;id&gt;&quot;</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> data </span><span style="color:#f29e74;">= </span><span style="color:#bae67e;">&quot;&lt;task&gt;&quot;</span><span style="color:#ccc9c2;">)]
+</span><span style="color:#ffa759;">fn </span><span style="color:#ffd580;">update_task</span><span style="color:#ccc9c2;">(</span><span style="color:#ffcc66;">id</span><span style="color:#ccc9c2cc;">: </span><span style="color:#ffa759;">u32</span><span style="color:#ccc9c2;">, </span><span style="color:#ffcc66;">task</span><span style="color:#ccc9c2cc;">: </span><span style="color:#ccc9c2;">Json&lt;Task&gt;, </span><span style="color:#ffcc66;">conn</span><span style="color:#ccc9c2cc;">:</span><span style="color:#ccc9c2;"> DbConn) </span><span style="color:#ccc9c2cc;">-&gt; </span><span style="color:#ccc9c2;">Json&lt;</span><span style="color:#ffa759;">i32</span><span style="color:#ccc9c2;">&gt; {
+    </span><span style="color:#ffa759;">let</span><span style="color:#ccc9c2;"> id </span><span style="color:#f29e74;">= </span><span style="color:#ccc9c2;">Task</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">update(</span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">conn</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> id </span><span style="color:#f29e74;">as </span><span style="color:#ffa759;">i32</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> task</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">into_inner</span><span style="color:#ccc9c2;">())</span><span style="color:#ccc9c2cc;">;
+</span><span style="color:#ccc9c2;">    Json(id)
+}
+
+</span><span style="color:#ccc9c2cc;">#</span><span style="color:#ccc9c2;">[</span><span style="color:#ffd580;">delete</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;/&lt;id&gt;&quot;</span><span style="color:#ccc9c2;">)]
+</span><span style="color:#ffa759;">fn </span><span style="color:#ffd580;">delete_task</span><span style="color:#ccc9c2;">(</span><span style="color:#ffcc66;">id</span><span style="color:#ccc9c2cc;">: </span><span style="color:#ffa759;">u32</span><span style="color:#ccc9c2;">, </span><span style="color:#ffcc66;">conn</span><span style="color:#ccc9c2cc;">:</span><span style="color:#ccc9c2;"> DbConn) </span><span style="color:#ccc9c2cc;">-&gt; </span><span style="color:#ccc9c2;">Json&lt;Value&gt; {
+    Task</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">delete(</span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">conn</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> id </span><span style="color:#f29e74;">as </span><span style="color:#ffa759;">i32</span><span style="color:#ccc9c2;">)</span><span style="color:#ccc9c2cc;">;
+</span><span style="color:#ccc9c2;">    Json(</span><span style="color:#f28779;">json!</span><span style="color:#ccc9c2;">({</span><span style="color:#bae67e;">&quot;status&quot;</span><span style="color:#ccc9c2cc;">: </span><span style="color:#bae67e;">&quot;ok&quot;</span><span style="color:#ccc9c2;">}))
+}
+</span></code></pre>
+<p>Then finally don't forget to mount these routes when you start <code>rocket</code> and we
+have ignition!.</p>
+<h2 id="gotham">Gotham</h2>
+<p><a href="https://gotham.rs/">Gotham</a> is a web framework a bit newer on the scene. With one of the
+key differences between it and Rocket is that it targets <strong>only</strong> stable Rust.
+Whereas to get those really fancy macros with Rocket it is currently only able
+to run on nightly Rust, which may be a deal breaker for some. This is not to say
+this is the only differing aspect but a notable one.</p>
+<p>Being a bit newer, Gotham is still changing it's shape and structure as when
+writing this it was only <strong>v0.2</strong>. However they do provide numerous examples of
+how to use the framework in the several ways in which it was designed. Due to
+the youth of this framework some of the examples on the website are out of date
+as the framework changes but the <a href="https://github.com/gotham-rs/gotham/tree/master/examples">GitHub</a> does provide up to date
+examples. This is what I used to piece this one together.</p>
+<h3 id="finding-common-ground">Finding Common Ground</h3>
+<p>The way I approached this little project was to try the different web frameworks
+whilst keeping the same database interactions. Therefore it seemed sensible to
+extract the common database work and share that between the two frameworks.
+Therefore we will start with the current <code>model.rs</code> and keep it as similar as
+possible.</p>
+<h3 id="getting-it-started">Getting it started</h3>
+<p>As I was less familiar with this framework and the examples weren't yet as
+documented I thought I would try some nice and simple routing and basic
+responses for those endpoints but they didn't need to return anything.</p>
+<p>The first part was simply starting the framework, this looked a bit different
+but still pretty simple:</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">pub fn </span><span style="color:#ffd580;">start</span><span style="color:#ccc9c2;">() {
+    </span><span style="color:#ffa759;">let</span><span style="color:#ccc9c2;"> addr </span><span style="color:#f29e74;">= </span><span style="color:#bae67e;">&quot;127.0.0.1:8000&quot;</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#f28779;">println!</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;Listening for requests at http://</span><span style="color:#ffcc66;">{}</span><span style="color:#bae67e;">&quot;</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> addr)</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ccc9c2;">gotham</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">start(addr</span><span style="color:#ccc9c2cc;">, </span><span style="color:#f28779;">router</span><span style="color:#ccc9c2;">())
+}
+</span></code></pre>
+<p>You will note there is a <code>router()</code> function which I have made no mention of,
+never fear I will explain it here! Rather than the dispersed approach for the
+routing that was used in Rocket where each route gets to be defined at the
+function that is to be executed, in Gotham we define the routes in a single
+function producing a <code>Router</code>. Whilst it looks different we are essentially
+doing the same thing as we had to mount all the routes in Rocket when starting
+it.</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">use </span><span style="color:#ccc9c2;">gotham</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">router</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">Router</span><span style="color:#ccc9c2cc;">;
+</span><span style="color:#ffa759;">use </span><span style="color:#ccc9c2;">gotham</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">router</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">builder</span><span style="color:#f29e74;">::*</span><span style="color:#ccc9c2cc;">;
+
+</span><span style="color:#ffa759;">fn </span><span style="color:#ffd580;">router </span><span style="color:#ccc9c2cc;">-&gt;</span><span style="color:#ccc9c2;"> Router {
+    </span><span style="color:#f28779;">build_simple_router</span><span style="color:#ccc9c2;">(|</span><span style="color:#ffcc66;">route</span><span style="color:#ccc9c2;">|{
+        route</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">get</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;/tasks&quot;</span><span style="color:#ccc9c2;">)</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">to</span><span style="color:#ccc9c2;">(get_all_tasks)</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ccc9c2;">})
+}
+</span></code></pre>
+<p>So now we have a simple route to the <code>get_all_tasks</code> request handler so we
+better define that on but first when we look into the documentation for Gotham
+it has a very clear definition of what a <code>Handler</code> must look like. It takes a
+<code>State</code> and returns a tuple of <code>(State, Response)</code>. Now we want to return a list
+of <code>Task</code>s, so thankfully this is made very simple by using the <code>IntoResponse</code>
+trait provided from Gotham. With a small tweak of our <code>model.rs</code> we can have our
+response type now be a <code>TaskList</code>.</p>
+<p><code>model.rs</code></p>
+<pre style="background-color:#212733;">
+<code><span style="font-style:italic;color:#5c6773;">// ...
+
+</span><span style="color:#ccc9c2cc;">#</span><span style="color:#ccc9c2;">[</span><span style="color:#ffd580;">derive</span><span style="color:#ccc9c2;">(Deserialize</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> Serialize)]
+</span><span style="color:#ffa759;">pub struct </span><span style="color:#73d0ff;">TaskList </span><span style="color:#ccc9c2;">{
+    </span><span style="color:#ffa759;">pub </span><span style="color:#ccc9c2;">list</span><span style="color:#ccc9c2cc;">: </span><span style="font-style:italic;color:#5ccfe6;">Vec</span><span style="color:#ccc9c2;">&lt;Task&gt;,
+}
+</span></code></pre>
+<p>Gotham uses <code>hyper</code> and <code>mime</code> crates to define its response structure so we
+will need to grab those.</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">extern crate</span><span style="color:#ccc9c2;"> hyper</span><span style="color:#ccc9c2cc;">;
+</span><span style="color:#ffa759;">extern crate</span><span style="color:#ccc9c2;"> mime</span><span style="color:#ccc9c2cc;">;
+</span><span style="color:#ffa759;">extern crate</span><span style="color:#ccc9c2;"> serde_json</span><span style="color:#ccc9c2cc;">;
+
+</span><span style="color:#ffa759;">use </span><span style="color:#ccc9c2;">gotham</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">state</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">State</span><span style="color:#ccc9c2cc;">;
+</span><span style="color:#ffa759;">use </span><span style="color:#ccc9c2;">gotham</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">http</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">response</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">create_response</span><span style="color:#ccc9c2cc;">;
+</span><span style="color:#ffa759;">use </span><span style="color:#ccc9c2;">hyper</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">{Response</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> StatusCode}</span><span style="color:#ccc9c2cc;">;
+
+</span><span style="color:#ffa759;">impl </span><span style="color:#ccc9c2;">IntoResponse </span><span style="color:#ffa759;">for </span><span style="color:#73d0ff;">TaskList </span><span style="color:#ccc9c2;">{
+    </span><span style="color:#ffa759;">fn </span><span style="color:#ffd580;">into_response</span><span style="color:#ccc9c2;">(</span><span style="color:#ffcc66;">self</span><span style="color:#ccc9c2;">, </span><span style="color:#ffcc66;">state</span><span style="color:#ccc9c2cc;">: </span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">State) </span><span style="color:#ccc9c2cc;">-&gt;</span><span style="color:#ccc9c2;"> Response {
+        </span><span style="color:#f28779;">create_response</span><span style="color:#ccc9c2;">(
+            </span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">state</span><span style="color:#ccc9c2cc;">,
+            </span><span style="color:#ccc9c2;">StatusCode</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">Ok</span><span style="color:#ccc9c2cc;">,
+            </span><span style="font-style:italic;color:#5ccfe6;">Some</span><span style="color:#ccc9c2;">((
+                serde_json</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">to_string(</span><span style="color:#f29e74;">&amp;</span><span style="font-style:italic;color:#5ccfe6;">self</span><span style="color:#f29e74;">.</span><span style="color:#ccc9c2;">list)
+                    </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">expect</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;serialized product&quot;</span><span style="color:#ccc9c2;">)
+                    </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">into_bytes</span><span style="color:#ccc9c2;">()</span><span style="color:#ccc9c2cc;">,
+                </span><span style="color:#ccc9c2;">mime</span><span style="color:#f29e74;">::</span><span style="color:#ffcc66;">APPLICATION_JSON</span><span style="color:#ccc9c2cc;">,
+            </span><span style="color:#ccc9c2;">))</span><span style="color:#ccc9c2cc;">,
+        </span><span style="color:#ccc9c2;">)
+    }
+}
+</span></code></pre>
+<p>Now we are ready to write our <code>Handler</code> to retrieve all the tasks.</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">fn </span><span style="color:#ffd580;">get_all_tasks</span><span style="color:#ccc9c2;">(</span><span style="color:#ffcc66;">state</span><span style="color:#ccc9c2cc;">:</span><span style="color:#ccc9c2;"> State) </span><span style="color:#ccc9c2cc;">-&gt; </span><span style="color:#ccc9c2;">(State, TaskList) {
+    </span><span style="color:#ffa759;">let</span><span style="color:#ccc9c2;"> tasks </span><span style="color:#f29e74;">= </span><span style="color:#f28779;">vec!</span><span style="color:#ccc9c2;">[
+        Task {
+            id</span><span style="color:#ccc9c2cc;">: </span><span style="color:#ffcc66;">1</span><span style="color:#ccc9c2cc;">,
+</span><span style="color:#ccc9c2;">            task</span><span style="color:#ccc9c2cc;">: </span><span style="color:#bae67e;">&quot;Do homework&quot;</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">to_owned</span><span style="color:#ccc9c2;">()</span><span style="color:#ccc9c2cc;">,
+</span><span style="color:#ccc9c2;">            completed</span><span style="color:#ccc9c2cc;">: </span><span style="color:#ffcc66;">false</span><span style="color:#ccc9c2cc;">,
+        </span><span style="color:#ccc9c2;">}</span><span style="color:#ccc9c2cc;">,
+    </span><span style="color:#ccc9c2;">]</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ccc9c2;">(state</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> tasks)
+}
+</span></code></pre><h3 id="manage-the-database-connection">Manage the Database Connection</h3>
+<p>Now we want to connect this up so it actually reads from the database. Here I
+followed a similar approach to what I had seen from working with Rocket, which I
+am sure is probably not the best or intended method with Gotham but it has
+seemed to do the job.</p>
+<p><em>After putting this together I did actually see that Gotham does have some work
+in their GitHub repository about getting Diesel to connect with it.</em></p>
+<p>The way Gotham manages state is though its definition of a <code>Handler</code> as we have
+already seen. Every <code>Handler</code> is given the state, what we need to do is tell
+Gotham that we would like to add our database connection to part of that state
+for it to manage. After some playing around I found the simplest way to do this
+is through middleware.</p>
+<p>In Gotham I have understood the concept of <code>middleware</code> as a construct to allow
+the management of the requests. They are called before the request is sent to
+the <code>Handler</code> and if desired can actually manage the response of the <code>Handler</code>.
+The Gotham framework manages the calling of these we simple have to implement
+the <code>Middleware</code> trait and add it to our <code>Router</code>.</p>
+<p>First of all we want our database connection pool to be able to be managed. To
+do so we add <code>gotham-derive</code> to our dependencies and create the following
+struct:</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ccc9c2cc;">#</span><span style="color:#ccc9c2;">[</span><span style="color:#ffd580;">derive</span><span style="color:#ccc9c2;">(StateData)]
+</span><span style="color:#ffa759;">struct </span><span style="color:#73d0ff;">PoolState</span><span style="color:#ccc9c2;">(Pool)</span><span style="color:#ccc9c2cc;">;
+</span></code></pre>
+<p>Now we are able to add <code>PoolState</code> to the Gotham <code>State</code>. Next we create our
+middleware and implement it. The connection pool is created in the exact same
+manner as it was when using Rocket.</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">use </span><span style="color:#ccc9c2;">gotham</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">middleware</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">Middleware</span><span style="color:#ccc9c2cc;">;
+
+#</span><span style="color:#ccc9c2;">[</span><span style="color:#ffd580;">derive</span><span style="color:#ccc9c2;">(Clone</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> NewMiddleware)]
+</span><span style="color:#ffa759;">struct </span><span style="color:#73d0ff;">DbConnMiddleware</span><span style="color:#ccc9c2cc;">;
+
+</span><span style="color:#ffa759;">impl </span><span style="color:#ccc9c2;">Middleware </span><span style="color:#ffa759;">for </span><span style="color:#73d0ff;">DbConnMiddleware </span><span style="color:#ccc9c2;">{
+    </span><span style="color:#ffa759;">fn </span><span style="color:#ffd580;">call</span><span style="color:#ccc9c2;">&lt;Chain&gt;(</span><span style="color:#ffcc66;">self</span><span style="color:#ccc9c2;">, </span><span style="color:#ffa759;">mut </span><span style="color:#ffcc66;">state</span><span style="color:#ccc9c2cc;">:</span><span style="color:#ccc9c2;"> State, </span><span style="color:#ffcc66;">chain</span><span style="color:#ccc9c2cc;">:</span><span style="color:#ccc9c2;"> Chain) </span><span style="color:#ccc9c2cc;">-&gt; </span><span style="font-style:italic;color:#5ccfe6;">Box</span><span style="color:#ccc9c2;">&lt;HandlerFuture&gt;
+    </span><span style="color:#ffa759;">where
+</span><span style="color:#ccc9c2;">        Chain</span><span style="color:#ccc9c2cc;">:</span><span style="color:#ccc9c2;"> FnOnce(State) -&gt; </span><span style="font-style:italic;color:#5ccfe6;">Box</span><span style="color:#ccc9c2;">&lt;HandlerFuture&gt;,
+    {
+        </span><span style="color:#ffa759;">if </span><span style="color:#f29e74;">!</span><span style="color:#ccc9c2;">state</span><span style="color:#f29e74;">.</span><span style="color:#ccc9c2;">has</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">&lt;PoolState&gt;() {
+            </span><span style="font-style:italic;color:#5c6773;">// Initialize it
+</span><span style="color:#ccc9c2;">            state</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">put</span><span style="color:#ccc9c2;">(PoolState(</span><span style="color:#f28779;">init_pool</span><span style="color:#ccc9c2;">()))</span><span style="color:#ccc9c2cc;">;
+        </span><span style="color:#ccc9c2;">}
+        </span><span style="color:#f28779;">chain</span><span style="color:#ccc9c2;">(state)
+    }
+}
+</span></code></pre>
+<p>Finally we modify our <code>Router</code> to use this middleware:</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">use </span><span style="color:#ccc9c2;">gotham</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">pipeline</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">single</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">single_pipeline</span><span style="color:#ccc9c2cc;">;
+
+</span><span style="color:#ffa759;">fn </span><span style="color:#ffd580;">router</span><span style="color:#ccc9c2;">() </span><span style="color:#ccc9c2cc;">-&gt;</span><span style="color:#ccc9c2;"> Router {
+    </span><span style="color:#ffa759;">let </span><span style="color:#ccc9c2;">(chain</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> pipelines) </span><span style="color:#f29e74;">= </span><span style="color:#f28779;">single_pipeline</span><span style="color:#ccc9c2;">(</span><span style="color:#f28779;">new_pipeline</span><span style="color:#ccc9c2;">()</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">add</span><span style="color:#ccc9c2;">(DbConnMiddleware)</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">build</span><span style="color:#ccc9c2;">())</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#f28779;">build_router</span><span style="color:#ccc9c2;">(chain</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> pipelines</span><span style="color:#ccc9c2cc;">, </span><span style="color:#ccc9c2;">|</span><span style="color:#ffcc66;">route</span><span style="color:#ccc9c2;">| {
+        route</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">get_or_head</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;/&quot;</span><span style="color:#ccc9c2;">)</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">to</span><span style="color:#ccc9c2;">(index)</span><span style="color:#ccc9c2cc;">;
+</span><span style="color:#ccc9c2;">        route</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">get</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;/tasks&quot;</span><span style="color:#ccc9c2;">)</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">to</span><span style="color:#ccc9c2;">(get_all_tasks)</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ccc9c2;">})
+}
+</span></code></pre><h3 id="adding-the-read-all-functionality">Adding the Read All Functionality</h3>
+<p>Now that we have access to the database through the <code>State</code> it is actually very
+simple to implement the CRUD functionality. First we create a simple helper
+method to extract the database connection from the state.</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">fn </span><span style="color:#ffd580;">db_conn</span><span style="color:#ccc9c2;">(</span><span style="color:#ffcc66;">state</span><span style="color:#ccc9c2cc;">: </span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">State) </span><span style="color:#ccc9c2cc;">-&gt; </span><span style="font-style:italic;color:#5ccfe6;">Option</span><span style="color:#ccc9c2;">&lt;DbConn&gt; {
+    state</span><span style="color:#f29e74;">.</span><span style="color:#ccc9c2;">borrow</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">&lt;PoolState&gt;()</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">get</span><span style="color:#ccc9c2;">()</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">ok</span><span style="color:#ccc9c2;">()</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">map</span><span style="color:#ccc9c2;">(|</span><span style="color:#ffcc66;">x</span><span style="color:#ccc9c2;">| DbConn(x))
+}
+</span></code></pre>
+<p>Then we can complete our read all functionality:</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">fn </span><span style="color:#ffd580;">get_all_tasks</span><span style="color:#ccc9c2;">(</span><span style="color:#ffcc66;">state</span><span style="color:#ccc9c2cc;">:</span><span style="color:#ccc9c2;"> State) </span><span style="color:#ccc9c2cc;">-&gt; </span><span style="color:#ccc9c2;">(State, TaskList) {
+    </span><span style="color:#ffa759;">let</span><span style="color:#ccc9c2;"> conn </span><span style="color:#f29e74;">= </span><span style="color:#f28779;">db_conn</span><span style="color:#ccc9c2;">(</span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">state)</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">expect</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;Failed with DB connection&quot;</span><span style="color:#ccc9c2;">)</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ffa759;">let</span><span style="color:#ccc9c2;"> tasks </span><span style="color:#f29e74;">=</span><span style="color:#ccc9c2;"> TaskList {
+        list</span><span style="color:#ccc9c2cc;">: </span><span style="color:#ccc9c2;">Task</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">all(</span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">conn)</span><span style="color:#ccc9c2cc;">,
+    </span><span style="color:#ccc9c2;">}</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ccc9c2;">(state</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> tasks)
+}
+</span></code></pre><h3 id="using-path-variables">Using Path Variables</h3>
+<p>The finally piece of the puzzle is implementing the update and delete where we
+specify the ID of the task we want to use. This is provided in the URL path.
+This is very easy to implement and reuse for both of these by creating a struct
+that Gotham will populate from the path.</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ccc9c2cc;">#</span><span style="color:#ccc9c2;">[</span><span style="color:#ffd580;">derive</span><span style="color:#ccc9c2;">(Deserialize</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> StateData</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> StaticResponseExtender)]
+</span><span style="color:#ffa759;">struct </span><span style="color:#73d0ff;">PathId </span><span style="color:#ccc9c2;">{
+    id</span><span style="color:#ccc9c2cc;">: </span><span style="color:#ffa759;">u32</span><span style="color:#ccc9c2;">,
+}
+</span></code></pre>
+<p>Followed by changing the <code>Router</code> definition to expect there to be a path
+variable</p>
+<pre style="background-color:#212733;">
+<code><span style="font-style:italic;color:#5c6773;">// ... previous router definition
+</span><span style="color:#ccc9c2;">route
+    </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">put</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;/task/:id&quot;</span><span style="color:#ccc9c2;">)
+    </span><span style="color:#f29e74;">.</span><span style="color:#ccc9c2;">with_path_extractor</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">&lt;PathId&gt;()
+    </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">to</span><span style="color:#ccc9c2;">(update_task)</span><span style="color:#ccc9c2cc;">;
+</span><span style="color:#ccc9c2;">route
+    </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">delete</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;/task/:id&quot;</span><span style="color:#ccc9c2;">)
+    </span><span style="color:#f29e74;">.</span><span style="color:#ccc9c2;">with_path_extractor</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">&lt;PathId&gt;()
+    </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">to</span><span style="color:#ccc9c2;">(delete_task)</span><span style="color:#ccc9c2cc;">;
+</span><span style="font-style:italic;color:#5c6773;">// ... rest of definition
+</span></code></pre>
+<p>Then we can define our delete to look like this:</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">fn </span><span style="color:#ffd580;">delete_task</span><span style="color:#ccc9c2;">(</span><span style="color:#ffa759;">mut </span><span style="color:#ffcc66;">state</span><span style="color:#ccc9c2cc;">:</span><span style="color:#ccc9c2;"> State) </span><span style="color:#ccc9c2cc;">-&gt; </span><span style="color:#ccc9c2;">(State, Response) {
+    </span><span style="color:#ffa759;">let</span><span style="color:#ccc9c2;"> PathId { id } </span><span style="color:#f29e74;">= </span><span style="color:#ccc9c2;">PathId</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">take_from(</span><span style="color:#f29e74;">&amp;</span><span style="color:#ffa759;">mut</span><span style="color:#ccc9c2;"> state)</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ffa759;">let</span><span style="color:#ccc9c2;"> conn </span><span style="color:#f29e74;">= </span><span style="color:#f28779;">db_conn</span><span style="color:#ccc9c2;">(</span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">state)</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">expect</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;Failed with DB connection&quot;</span><span style="color:#ccc9c2;">)</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ccc9c2;">Task</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">delete(</span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">conn</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> id </span><span style="color:#f29e74;">as </span><span style="color:#ffa759;">i32</span><span style="color:#ccc9c2;">)</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ffa759;">let</span><span style="color:#ccc9c2;"> resp </span><span style="color:#f29e74;">= </span><span style="color:#f28779;">create_response</span><span style="color:#ccc9c2;">(</span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">state</span><span style="color:#ccc9c2cc;">, </span><span style="color:#ccc9c2;">StatusCode</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">Ok</span><span style="color:#ccc9c2cc;">, </span><span style="font-style:italic;color:#5ccfe6;">None</span><span style="color:#ccc9c2;">)</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ccc9c2;">(state</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> resp)
+}
+</span></code></pre><h3 id="using-the-request-body">Using the Request Body</h3>
+<p>You may have noticed the update and create have yet to be addressed and this is
+because these needed to extract the <code>Task</code> to create or update from the body of
+the request. This was a little bit more clunky than simply adding annotations
+but once I got around it, it wasn't too bad at all.</p>
+<p>Firstly you must know that Gotham actually stores the <code>Body</code> as part of the
+<code>State</code> provided to the handler so that is simply how we would extract it.</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">use </span><span style="color:#ccc9c2;">hyper</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">Body</span><span style="color:#ccc9c2cc;">;
+
+</span><span style="color:#ffa759;">let</span><span style="color:#ccc9c2;"> body </span><span style="color:#f29e74;">= </span><span style="color:#ccc9c2;">Body</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">take_from(</span><span style="color:#f29e74;">&amp;</span><span style="color:#ffa759;">mut</span><span style="color:#ccc9c2;"> state)
+        </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">concat2</span><span style="color:#ccc9c2;">()
+        </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">then</span><span style="color:#ccc9c2;">(</span><span style="font-style:italic;color:#5c6773;">// Do something with the body);
+</span></code></pre>
+<p>Now there is a fair bit of boiler plate to get this <code>Body</code> out of the state as
+the action is asynchronous. So I thought it would be nice if I could just
+provide a closure of what I want to do with the body once it is ready and not
+have to write this boiler plate out each time (I know twice in this case but I
+was determined). So after some fighting with the borrow checker with lifetimes
+this was the resulting create and update functions I got:</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">fn </span><span style="color:#ffd580;">body_handler</span><span style="color:#ccc9c2;">&lt;F&gt;(</span><span style="color:#ffa759;">mut </span><span style="color:#ffcc66;">state</span><span style="color:#ccc9c2cc;">:</span><span style="color:#ccc9c2;"> State, </span><span style="color:#ffcc66;">f</span><span style="color:#ccc9c2cc;">:</span><span style="color:#ccc9c2;"> F) </span><span style="color:#ccc9c2cc;">-&gt; </span><span style="font-style:italic;color:#5ccfe6;">Box</span><span style="color:#ccc9c2;">&lt;HandlerFuture&gt;
+</span><span style="color:#ffa759;">where
+</span><span style="color:#ccc9c2;">    F</span><span style="color:#ccc9c2cc;">: </span><span style="color:#ffa759;">&#39;static</span><span style="color:#ccc9c2;"> + Fn(String, </span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">State) -&gt; Response,
+{
+    </span><span style="color:#ffa759;">let</span><span style="color:#ccc9c2;"> body </span><span style="color:#f29e74;">= </span><span style="color:#ccc9c2;">Body</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">take_from(</span><span style="color:#f29e74;">&amp;</span><span style="color:#ffa759;">mut</span><span style="color:#ccc9c2;"> state)
+        </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">concat2</span><span style="color:#ccc9c2;">()
+        </span><span style="color:#f29e74;">.</span><span style="color:#f28779;">then</span><span style="color:#ccc9c2;">(</span><span style="color:#ffa759;">move </span><span style="color:#f29e74;">|</span><span style="color:#ccc9c2;">full_body</span><span style="color:#f29e74;">| </span><span style="color:#ffa759;">match</span><span style="color:#ccc9c2;"> full_body {
+            </span><span style="font-style:italic;color:#5ccfe6;">Ok</span><span style="color:#ccc9c2;">(valid_body) </span><span style="color:#f29e74;">=&gt; </span><span style="color:#ccc9c2;">{
+                </span><span style="color:#ffa759;">let</span><span style="color:#ccc9c2;"> body_content </span><span style="color:#f29e74;">= </span><span style="font-style:italic;color:#5ccfe6;">String</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">from_utf8(valid_body</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">to_vec</span><span style="color:#ccc9c2;">())</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">unwrap</span><span style="color:#ccc9c2;">()</span><span style="color:#ccc9c2cc;">;
+                </span><span style="color:#ffa759;">let</span><span style="color:#ccc9c2;"> res </span><span style="color:#f29e74;">= </span><span style="color:#f28779;">f</span><span style="color:#ccc9c2;">(body_content</span><span style="color:#ccc9c2cc;">, </span><span style="color:#f29e74;">&amp;</span><span style="color:#ffa759;">mut</span><span style="color:#ccc9c2;"> state)</span><span style="color:#ccc9c2cc;">;
+                </span><span style="color:#ccc9c2;">future</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">ok((state</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> res))
+            }
+            </span><span style="font-style:italic;color:#5ccfe6;">Err</span><span style="color:#ccc9c2;">(e) </span><span style="color:#f29e74;">=&gt; </span><span style="color:#ffa759;">return </span><span style="color:#ccc9c2;">future</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">err((state</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> e</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">into_handler_error</span><span style="color:#ccc9c2;">()))</span><span style="color:#ccc9c2cc;">,
+        </span><span style="color:#ccc9c2;">})</span><span style="color:#ccc9c2cc;">;
+    </span><span style="font-style:italic;color:#5ccfe6;">Box</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">new(body)
+}
+
+</span><span style="color:#ffa759;">fn </span><span style="color:#ffd580;">create_task</span><span style="color:#ccc9c2;">(</span><span style="color:#ffcc66;">state</span><span style="color:#ccc9c2cc;">:</span><span style="color:#ccc9c2;"> State) </span><span style="color:#ccc9c2cc;">-&gt; </span><span style="font-style:italic;color:#5ccfe6;">Box</span><span style="color:#ccc9c2;">&lt;HandlerFuture&gt; {
+    </span><span style="color:#f28779;">body_handler</span><span style="color:#ccc9c2;">(state</span><span style="color:#ccc9c2cc;">, </span><span style="color:#ccc9c2;">|</span><span style="color:#ffcc66;">s</span><span style="color:#ccc9c2cc;">, </span><span style="color:#ffcc66;">state</span><span style="color:#ccc9c2;">| {
+        </span><span style="color:#ffa759;">let</span><span style="color:#ccc9c2;"> task </span><span style="color:#f29e74;">= </span><span style="color:#ccc9c2;">serde_json</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">from_str(</span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">s)</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">expect</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;Failed to deserialize&quot;</span><span style="color:#ccc9c2;">)</span><span style="color:#ccc9c2cc;">;
+        </span><span style="color:#ffa759;">let</span><span style="color:#ccc9c2;"> conn </span><span style="color:#f29e74;">= </span><span style="color:#f28779;">db_conn</span><span style="color:#ccc9c2;">(state)</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">expect</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;Failed with DB connection&quot;</span><span style="color:#ccc9c2;">)</span><span style="color:#ccc9c2cc;">;
+        </span><span style="color:#ccc9c2;">Task</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">create(</span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">conn</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> task)</span><span style="color:#ccc9c2cc;">;
+        </span><span style="color:#f28779;">create_response</span><span style="color:#ccc9c2;">(state</span><span style="color:#ccc9c2cc;">, </span><span style="color:#ccc9c2;">StatusCode</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">Ok</span><span style="color:#ccc9c2cc;">, </span><span style="font-style:italic;color:#5ccfe6;">None</span><span style="color:#ccc9c2;">)
+    })
+}
+
+</span><span style="color:#ffa759;">fn </span><span style="color:#ffd580;">update_task</span><span style="color:#ccc9c2;">(</span><span style="color:#ffa759;">mut </span><span style="color:#ffcc66;">state</span><span style="color:#ccc9c2cc;">:</span><span style="color:#ccc9c2;"> State) </span><span style="color:#ccc9c2cc;">-&gt; </span><span style="font-style:italic;color:#5ccfe6;">Box</span><span style="color:#ccc9c2;">&lt;HandlerFuture&gt; {
+    </span><span style="color:#ffa759;">let</span><span style="color:#ccc9c2;"> PathId { id } </span><span style="color:#f29e74;">= </span><span style="color:#ccc9c2;">PathId</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">take_from(</span><span style="color:#f29e74;">&amp;</span><span style="color:#ffa759;">mut</span><span style="color:#ccc9c2;"> state)</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#f28779;">body_handler</span><span style="color:#ccc9c2;">(state</span><span style="color:#ccc9c2cc;">, </span><span style="color:#ffa759;">move </span><span style="color:#f29e74;">|</span><span style="color:#ccc9c2;">s</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> state</span><span style="color:#f29e74;">| </span><span style="color:#ccc9c2;">{
+        </span><span style="color:#ffa759;">let</span><span style="color:#ccc9c2;"> task </span><span style="color:#f29e74;">= </span><span style="color:#ccc9c2;">serde_json</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">from_str(</span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">s)</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">expect</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;Failed to deserialize&quot;</span><span style="color:#ccc9c2;">)</span><span style="color:#ccc9c2cc;">;
+        </span><span style="color:#ffa759;">let</span><span style="color:#ccc9c2;"> conn </span><span style="color:#f29e74;">= </span><span style="color:#f28779;">db_conn</span><span style="color:#ccc9c2;">(</span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">state)</span><span style="color:#f29e74;">.</span><span style="color:#f28779;">expect</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;Failed with DB connection&quot;</span><span style="color:#ccc9c2;">)</span><span style="color:#ccc9c2cc;">;
+        </span><span style="color:#ccc9c2;">Task</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">update(</span><span style="color:#f29e74;">&amp;</span><span style="color:#ccc9c2;">conn</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> id </span><span style="color:#f29e74;">as </span><span style="color:#ffa759;">i32</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> task)</span><span style="color:#ccc9c2cc;">;
+        </span><span style="color:#f28779;">create_response</span><span style="color:#ccc9c2;">(state</span><span style="color:#ccc9c2cc;">, </span><span style="color:#ccc9c2;">StatusCode</span><span style="color:#f29e74;">::</span><span style="color:#ccc9c2;">Ok</span><span style="color:#ccc9c2cc;">, </span><span style="font-style:italic;color:#5ccfe6;">None</span><span style="color:#ccc9c2;">)
+    })
+}
+</span></code></pre><h2 id="conclusion">Conclusion</h2>
+<p>All in all I hope I could give some really basic use cases for working with
+these frameworks and I hope to keep adding to this and improving the code as I
+go so keep an eye on the <a href="https://github.com/maccoda/micro-rs">repository</a> if you are interested.</p>
+<p>The key thing I wanted to try with this exercise was usability of the
+frameworks, not really comparing in terms of performance. I think in this small
+example Diesel was extremely easy to work with, mainly due to its helpful
+documentation and examples.</p>
+<p>In terms of the web frameworks you could definitely feel that Rocket was the
+more mature in particular with its documentation which really assisted in
+getting everything started. Further having those macros made everything very
+simple to get it together, so if speed to get a product is your thing I would
+definitely recommend. Also the variety of functionality Rocket currently
+supports is great, I have barely scratched the surface with this basic example.</p>
+<p>Gotham definitely has a lot going for it and it has very clear goals of what it
+wants to achieve. It does have a bit more boiler plate lying around but
+personally I don't mind that because I feel like I can understand a bit better
+how things are working. This is definitely a promising framework and look
+forward to seeing what is to come.</p>
+
+</div>
+
+        </div>
+
+    </body>
+
+</html>

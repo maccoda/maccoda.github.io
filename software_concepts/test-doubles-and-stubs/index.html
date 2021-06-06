@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+      <!-- Enable responsiveness on mobile devices-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+      <title>Maccoda Mail</title>
+
+      <!-- CSS -->
+      <link rel="stylesheet" href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;print.css" media="print">
+      <link rel="stylesheet" href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;poole.css">
+      <link rel="stylesheet" href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;hyde.css">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+      
+
+      
+<link rel="stylesheet" href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;style.css">
+
+<script src="/mermaid.min.js"></script>
+
+<script src="https://getinsights.io/static/js/insights.js"></script>
+<script>
+    var locationString = window.location.toString();
+    insights.init('yov5Y1hNA4UC4Hu0', { disabled: locationString.includes('localhost') || locationString.includes('127.0.0.1')});
+    insights.trackPages();
+</script>
+
+
+    </head>
+
+    <body class="theme-base-09 ">
+        
+            <div class="sidebar">
+                <div class="container sidebar-sticky">
+                    <div class="sidebar-about">
+                        
+                            <a href="https:&#x2F;&#x2F;maccoda.github.io"><h1>Maccoda Mail</h1></a>
+                            
+                            <p class="lead">Sending out some thoughts and learnings</p>
+                            
+                        
+                    </div>
+
+                    <ul class="sidebar-nav">
+                        
+    
+        <a href="https:&#x2F;&#x2F;github.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;GitHub-Mark-32px.png" alt=GitHub height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;gitlab.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;gitlab-icon-1-color-black-rgb.svg" alt=Gitlab height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;dev.to&#x2F;maccoda" style="display: inline-block;">
+            <img src="https:&#x2F;&#x2F;d2fltix0v2e0sb.cloudfront.net&#x2F;dev-badge.svg" alt=Dev.to blog height="30" width="30"/>
+        </a>
+    
+
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div class="content container">
+            
+<a href="..">▲ up</a>
+<div class="post">
+    <h1 class="post-title">Making your own test doubles and mocks</h1>
+    <span class="post-date">2019-06-19 - 6 mins read</span>
+    <p>This is another topic I was wanting to cover whilst I explored some topics that usually are missed
+in schooling. Test doubles or mocks and stubs. The first thing I want to note is that I don't intend
+on using any frameworks as I am aiming to try explain the concepts so hopefully it becomes apparent
+as to why the frameworks came in place. The next is how we will look into this, to start I want to
+clarify my understanding for the difference between the stubs and doubles and what both of these
+enable. Then I want to consolidate these with some examples, so let's get into it.</p>
+<h2 id="what-exactly-is-the-difference">What exactly is the difference?</h2>
+<p>Now when I was first introduced to mocking as it is called I wasn't told of the difference and the
+value, instead it was &quot;Here is a cool framework that does it all for us&quot;. Don't ask how it works or
+what it does, it gets our tests to pass so we move on. What I came to learn later is that the
+framework was blocking me from understanding what exactly was going on. What was worse, the
+framework obfuscated bad design choices because it made it simple to test my classes even when they
+shouldn't have been. That was when I was told of <em>test doubles</em> and <em>test stubs</em>.</p>
+<p>These two concepts are rarely seen too far from each other. They form a very valuable part of being
+able to write good unit tests that are able to refine your system under test, where for the examples
+below that will be a single class but in different scenarios this could vary. It essentially boils
+down to your system under test needing to interact with some other system, who we will call its
+collaborators, and we want to test these interactions.</p>
+<p>When your service interacts with another service it can be broken down into 2 key parts. The request
+and the response. When unit testing this we want to ensure that what we request of our collaborators
+is correct and when receiving a response we correctly manage that. Therefore this can lead to two
+separate tests for each interaction so to keep a single assertion per test. When we test the
+<strong>request</strong> we will use a <strong>test double</strong> to assert that we request the correct behavior from the
+collaborator. Then on the return with the <strong>response</strong> we will use a <strong>test stub</strong> to provide some
+dummy data that our service can process.</p>
+<!--
+
+TODO: A picture would be pretty handy here
+
+Example will be database interaction where we need to ask a certain query based on parameters and
+process the output to either return a list of a sub set of results or the number.
+-->
+<p>Let's try and put this into action with an example. Let's say you have a little application that
+manages your books and one of your services looks up those books by author and returns the list of
+book titles. However our book model is pretty complex so we want the service to map this to a simple
+model of title and author when it has retrieved the results.</p>
+<p>Our database entity may look something like this:</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">public class </span><span style="color:#73d0ff;">BookEntity </span><span style="color:#ccc9c2;">{
+    </span><span style="font-style:italic;color:#5c6773;">// Note: this is bad practice to give these primitive types but will suffice for this example
+    </span><span style="color:#ffa759;">private </span><span style="font-style:italic;color:#5ccfe6;">String </span><span style="color:#ccc9c2;">title</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ffa759;">private </span><span style="font-style:italic;color:#5ccfe6;">String </span><span style="color:#ccc9c2;">author</span><span style="color:#ccc9c2cc;">;
+    </span><span style="font-style:italic;color:#5c6773;">// ...some more fields
+
+    </span><span style="color:#ffa759;">public </span><span style="font-style:italic;color:#5ccfe6;">String </span><span style="color:#ffd580;">title</span><span style="color:#ccc9c2;">() {
+        </span><span style="color:#ffa759;">return</span><span style="color:#ccc9c2;"> title</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ccc9c2;">}
+
+    </span><span style="color:#ffa759;">public </span><span style="font-style:italic;color:#5ccfe6;">String </span><span style="color:#ffd580;">author</span><span style="color:#ccc9c2;">() {
+        </span><span style="color:#ffa759;">return</span><span style="color:#ccc9c2;"> author</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ccc9c2;">}
+
+    </span><span style="font-style:italic;color:#5c6773;">// ... some more methods
+</span><span style="color:#ccc9c2;">}
+</span></code></pre>
+<p>With our output model like this:</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">public class </span><span style="color:#73d0ff;">BookModel </span><span style="color:#ccc9c2;">{
+    </span><span style="color:#ffa759;">private </span><span style="font-style:italic;color:#5ccfe6;">String </span><span style="color:#ccc9c2;">title</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ffa759;">private </span><span style="font-style:italic;color:#5ccfe6;">String </span><span style="color:#ccc9c2;">author</span><span style="color:#ccc9c2cc;">;
+
+    </span><span style="color:#ffa759;">public </span><span style="color:#ffd580;">BookModel</span><span style="color:#ccc9c2;">(</span><span style="font-style:italic;color:#5ccfe6;">String </span><span style="color:#ffcc66;">title</span><span style="color:#ccc9c2cc;">, </span><span style="font-style:italic;color:#5ccfe6;">String </span><span style="color:#ffcc66;">author</span><span style="color:#ccc9c2;">) {
+        </span><span style="font-style:italic;color:#5ccfe6;">this</span><span style="color:#f29e74;">.</span><span style="color:#ccc9c2;">title </span><span style="color:#f29e74;">=</span><span style="color:#ccc9c2;"> title</span><span style="color:#ccc9c2cc;">;
+        </span><span style="font-style:italic;color:#5ccfe6;">this</span><span style="color:#f29e74;">.</span><span style="color:#ccc9c2;">author </span><span style="color:#f29e74;">=</span><span style="color:#ccc9c2;"> author</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ccc9c2;">}
+
+    </span><span style="color:#ffa759;">public </span><span style="font-style:italic;color:#5ccfe6;">String </span><span style="color:#ffd580;">title</span><span style="color:#ccc9c2;">() {
+        </span><span style="color:#ffa759;">return</span><span style="color:#ccc9c2;"> title</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ccc9c2;">}
+
+    </span><span style="color:#ffa759;">public </span><span style="font-style:italic;color:#5ccfe6;">String </span><span style="color:#ffd580;">author</span><span style="color:#ccc9c2;">() {
+        </span><span style="color:#ffa759;">return</span><span style="color:#ccc9c2;"> author</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ccc9c2;">}
+}
+</span></code></pre>
+<p>Then our service may look a little like:</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">public class </span><span style="color:#73d0ff;">BookLookupService </span><span style="color:#ccc9c2;">{
+    </span><span style="color:#ffa759;">private </span><span style="font-style:italic;color:#5ccfe6;">BookRepository </span><span style="color:#ccc9c2;">repository</span><span style="color:#ccc9c2cc;">;
+
+    </span><span style="font-style:italic;color:#5c6773;">// ...
+
+    </span><span style="color:#ffa759;">public </span><span style="font-style:italic;color:#5ccfe6;">List</span><span style="color:#ccc9c2;">&lt;</span><span style="font-style:italic;color:#5ccfe6;">BookModel</span><span style="color:#ccc9c2;">&gt; </span><span style="color:#ffd580;">findByAuthor</span><span style="color:#ccc9c2;">(</span><span style="font-style:italic;color:#5ccfe6;">String </span><span style="color:#ffcc66;">author</span><span style="color:#ccc9c2;">) {
+        </span><span style="font-style:italic;color:#5ccfe6;">List</span><span style="color:#ccc9c2;">&lt;</span><span style="font-style:italic;color:#5ccfe6;">BookEntity</span><span style="color:#ccc9c2;">&gt; bookEntities </span><span style="color:#f29e74;">=</span><span style="color:#ccc9c2;"> repository</span><span style="color:#f29e74;">.</span><span style="color:#ffd580;">findBooksByAuthor</span><span style="color:#ccc9c2;">(author)</span><span style="color:#ccc9c2cc;">;
+        </span><span style="color:#ffa759;">return</span><span style="color:#ccc9c2;"> bookEntities</span><span style="color:#f29e74;">.</span><span style="color:#ffd580;">stream</span><span style="color:#ccc9c2;">()</span><span style="color:#f29e74;">.</span><span style="color:#ffd580;">map</span><span style="color:#ccc9c2;">(</span><span style="color:#ffcc66;">x </span><span style="color:#ffa759;">-&gt; new </span><span style="font-style:italic;color:#5ccfe6;">BookModel</span><span style="color:#ccc9c2;">(x</span><span style="color:#f29e74;">.</span><span style="color:#ffd580;">title</span><span style="color:#ccc9c2;">()</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> x</span><span style="color:#f29e74;">.</span><span style="color:#ffd580;">author</span><span style="color:#ccc9c2;">()))</span><span style="color:#f29e74;">.</span><span style="color:#ffd580;">collect</span><span style="color:#ccc9c2;">(</span><span style="font-style:italic;color:#5ccfe6;">Collectors</span><span style="color:#f29e74;">::</span><span style="color:#ffd580;">toList</span><span style="color:#ccc9c2;">)</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ccc9c2;">}
+}
+</span></code></pre>
+<p>Now let's get onto writing these tests!</p>
+<h2 id="testing-with-a-double">Testing with a double</h2>
+<p>As I said before we can split the interaction up into 2 whilst writing our unit tests for the
+<code>BookLookupService</code>. We will use a test double to ensure that it communicates with its
+<code>BookRepository</code> collaborator correctly. For this to work <code>BookRepository</code> should be an interface
+that we can implement for our test, as all <code>BookLookupService</code> needs is a <code>findBookByAuthor</code> method.</p>
+<p>This is perhaps what a possible double could look like.</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">public class </span><span style="color:#73d0ff;">BookRepositoryDouble </span><span style="color:#ffa759;">implements </span><span style="text-decoration:underline;color:#73d0ff;">BookRepository </span><span style="color:#ccc9c2;">{
+    </span><span style="color:#ffa759;">int </span><span style="color:#ccc9c2;">callCount </span><span style="color:#f29e74;">= </span><span style="color:#ffcc66;">0</span><span style="color:#ccc9c2cc;">;
+    </span><span style="font-style:italic;color:#5ccfe6;">String </span><span style="color:#ccc9c2;">authorArgument</span><span style="color:#ccc9c2cc;">;
+    </span><span style="font-style:italic;color:#5c6773;">// ... implements other methods of the interface
+
+    </span><span style="color:#ccc9c2cc;">@</span><span style="color:#ffd580;">Override
+    </span><span style="color:#ffa759;">public </span><span style="font-style:italic;color:#5ccfe6;">List</span><span style="color:#ccc9c2;">&lt;</span><span style="font-style:italic;color:#5ccfe6;">BookModel</span><span style="color:#ccc9c2;">&gt; </span><span style="color:#ffd580;">findBooksByAuthor</span><span style="color:#ccc9c2;">(</span><span style="font-style:italic;color:#5ccfe6;">String </span><span style="color:#ffcc66;">author</span><span style="color:#ccc9c2;">) {
+        callCount</span><span style="color:#f29e74;">++</span><span style="color:#ccc9c2cc;">;
+</span><span style="color:#ccc9c2;">        authorArgument </span><span style="color:#f29e74;">=</span><span style="color:#ccc9c2;"> author</span><span style="color:#ccc9c2cc;">;
+        </span><span style="color:#ffa759;">return new </span><span style="font-style:italic;color:#5ccfe6;">List</span><span style="color:#ccc9c2;">&lt;&gt;(books)</span><span style="color:#ccc9c2cc;">; </span><span style="font-style:italic;color:#5c6773;">// Return some books we set earlier
+    </span><span style="color:#ccc9c2;">}
+}
+</span></code></pre>
+<p>As you can see we are interested in how our <code>BookRepositoryDouble</code> is being called. Hence we track
+the parameters given and times called so that we could make some assertions on those values. On this
+side of the collaboration we want to see that <code>findBooksByAuthor</code> is called with the correct
+parameters. Arguably in this example the test doesn't provide us much but the concept extends to all
+cases.</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ccc9c2cc;">@</span><span style="color:#ffd580;">Before
+</span><span style="color:#ffa759;">public</span><span style="color:#ccc9c2;"> void </span><span style="color:#ffd580;">setUp</span><span style="color:#ccc9c2;">() {
+    service </span><span style="color:#f29e74;">= </span><span style="color:#ffa759;">new </span><span style="font-style:italic;color:#5ccfe6;">BookLookupService</span><span style="color:#ccc9c2;">(mockRepository)</span><span style="color:#ccc9c2cc;">;
+</span><span style="color:#ccc9c2;">}
+</span><span style="color:#ccc9c2cc;">@</span><span style="color:#ffd580;">Test
+</span><span style="color:#ffa759;">public</span><span style="color:#ccc9c2;"> void </span><span style="color:#ffd580;">checkCorrectCall</span><span style="color:#ccc9c2;">() {
+    service</span><span style="color:#f29e74;">.</span><span style="color:#ffd580;">findByAuthor</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;Author Name&quot;</span><span style="color:#ccc9c2;">)</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ffd580;">assertEquals</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;Author Name&quot;</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> mockRepository</span><span style="color:#f29e74;">.</span><span style="color:#ccc9c2;">authorArgument)</span><span style="color:#ccc9c2cc;">;
+</span><span style="color:#ccc9c2;">}
+</span></code></pre><h2 id="testing-with-a-stub">Testing with a stub</h2>
+<p>On the other side we want to ensure that our service interprets the received data correctly. For
+this case we create a stub where we don't track what is given but return something of value we can
+test. For example we would want to test the nominal path where there are a few books but we would
+also want to check how our service works when there is only one book or no books. As you can see the
+test scenarios with the stub are quite different than that of the double.</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ffa759;">public class </span><span style="color:#73d0ff;">BookRepositoryStub </span><span style="color:#ffa759;">implements </span><span style="text-decoration:underline;color:#73d0ff;">BookRepository </span><span style="color:#ccc9c2;">{
+    </span><span style="font-style:italic;color:#5c6773;">// ... implements other methods of the interface
+
+    </span><span style="color:#ccc9c2cc;">@</span><span style="color:#ffd580;">Override
+    </span><span style="color:#ffa759;">public </span><span style="font-style:italic;color:#5ccfe6;">List</span><span style="color:#ccc9c2;">&lt;</span><span style="font-style:italic;color:#5ccfe6;">BookModel</span><span style="color:#ccc9c2;">&gt; </span><span style="color:#ffd580;">findBooksByAuthor</span><span style="color:#ccc9c2;">(</span><span style="font-style:italic;color:#5ccfe6;">String </span><span style="color:#ffcc66;">author</span><span style="color:#ccc9c2;">) {
+        </span><span style="color:#ffa759;">return new </span><span style="font-style:italic;color:#5ccfe6;">List</span><span style="color:#ccc9c2;">&lt;&gt;()</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ccc9c2;">}
+}
+</span></code></pre>
+<p>Again we want to split our tests up as best we can to only have one assertion per test so there can
+only be one cause of failure.</p>
+<pre style="background-color:#212733;">
+<code><span style="color:#ccc9c2cc;">@</span><span style="color:#ffd580;">Test
+</span><span style="color:#ffa759;">public</span><span style="color:#ccc9c2;"> void </span><span style="color:#ffd580;">checkWithTwoBooks</span><span style="color:#ccc9c2;">() {
+    service </span><span style="color:#f29e74;">= </span><span style="color:#ffa759;">new </span><span style="font-style:italic;color:#5ccfe6;">BookLookupService</span><span style="color:#ccc9c2;">(twoBookRepository)</span><span style="color:#ccc9c2cc;">; </span><span style="font-style:italic;color:#5c6773;">// Instantiate with stub returning 2 books
+    </span><span style="font-style:italic;color:#5ccfe6;">List</span><span style="color:#ccc9c2;">&lt;</span><span style="font-style:italic;color:#5ccfe6;">BookModel</span><span style="color:#ccc9c2;">&gt; result </span><span style="color:#f29e74;">=</span><span style="color:#ccc9c2;"> service</span><span style="color:#f29e74;">.</span><span style="color:#ffd580;">findByAuthor</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;Author Name&quot;</span><span style="color:#ccc9c2;">)</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ffd580;">assertEquals</span><span style="color:#ccc9c2;">(</span><span style="color:#ffcc66;">2</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> result</span><span style="color:#f29e74;">.</span><span style="color:#ffd580;">size</span><span style="color:#ccc9c2;">())</span><span style="color:#ccc9c2cc;">;
+</span><span style="color:#ccc9c2;">}
+
+</span><span style="color:#ccc9c2cc;">@</span><span style="color:#ffd580;">Test
+</span><span style="color:#ffa759;">public</span><span style="color:#ccc9c2;"> void </span><span style="color:#ffd580;">checkWithZeroBooks</span><span style="color:#ccc9c2;">() {
+    service </span><span style="color:#f29e74;">= </span><span style="color:#ffa759;">new </span><span style="font-style:italic;color:#5ccfe6;">BookLookupService</span><span style="color:#ccc9c2;">(noBookRepository)</span><span style="color:#ccc9c2cc;">; </span><span style="font-style:italic;color:#5c6773;">// Instantiate with stub returning 0 books
+</span><span style="color:#ccc9c2;">    service</span><span style="color:#f29e74;">.</span><span style="color:#ffd580;">findByAuthor</span><span style="color:#ccc9c2;">(</span><span style="color:#bae67e;">&quot;Author Name&quot;</span><span style="color:#ccc9c2;">)</span><span style="color:#ccc9c2cc;">;
+    </span><span style="color:#ffd580;">assertEquals</span><span style="color:#ccc9c2;">(</span><span style="color:#ffcc66;">0</span><span style="color:#ccc9c2cc;">,</span><span style="color:#ccc9c2;"> result</span><span style="color:#f29e74;">.</span><span style="color:#ffd580;">size</span><span style="color:#ccc9c2;">())</span><span style="color:#ccc9c2cc;">;
+</span><span style="color:#ccc9c2;">}
+</span></code></pre><h2 id="frameworks">Frameworks</h2>
+<p>I just wanted to finish up this piece discussing the elephant in the room. Why are you not just
+using a framework to do all this? Honestly as I was writing these code examples I was thinking much
+the same. There is a lot of boiler plate and repetition, surely we could do better. However the
+problem with jumping straight into using frameworks is you don't get the chance to understand why
+they exist and instead only learn their usage at surface level. Hopefully after going through these
+examples when you next grab a mocking or testing framework you can appreciate and understand what it
+is doing for you rather than just blindly following examples because it sure does make a lot less
+code to write!</p>
+
+</div>
+
+        </div>
+
+    </body>
+
+</html>
