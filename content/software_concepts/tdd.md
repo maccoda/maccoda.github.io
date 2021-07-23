@@ -221,7 +221,7 @@ Now to the implementation. After testing for divisible by 3.
 
 ```kotlin
 fun fizzBuzz(num: Int): String {
-    return if (num % 3) "fizz"
+    return if (num % 3 == 0) "fizz"
     else if (num == 5) "buzz"
     else num.toString()
 }
@@ -231,8 +231,8 @@ Divisible by 5.
 
 ```kotlin
 fun fizzBuzz(num: Int): String {
-    return if (num % 3) "fizz"
-    else if (num % 5) "buzz"
+    return if (num % 3 == 0) "fizz"
+    else if (num % 5 == 0) "buzz"
     else num.toString()
 }
 ```
@@ -241,9 +241,9 @@ Divisible by both 3 and 5.
 
 ```kotlin
 fun fizzBuzz(num: Int): String {
-    return if (num % 3 && num % 5) "fizzbuzz"
-    else if (num % 3) "fizz"
-    else if (num % 5) "buzz"
+    return if (num % 3  == 0 && num % 5 == 0) "fizzbuzz"
+    else if (num % 3 == 0) "fizz"
+    else if (num % 5 == 0) "buzz"
     else num.toString()
 }
 ```
