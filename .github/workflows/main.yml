@@ -1,6 +1,6 @@
 on:
  push:
-  branches: [ writing ]
+  branches: [ main ]
 name: Build and deploy GH Pages
 jobs:
   build:
