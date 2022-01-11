@@ -1,0 +1,16 @@
+{
+  "content/*.md": {
+    "type": "source",
+    "template": [
+      "+++",
+      "date = ",
+      "title = ",
+      "description =",
+      "[taxonomies]",
+      "tags = [\"\"]",
+      "+++",
+      ""
+    ]
+  },
+  "*": {"dispatch": "zola serve"}
+}

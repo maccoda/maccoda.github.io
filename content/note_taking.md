@@ -5,16 +5,6 @@ description = "How you can set up VSCode to be a useful note taking application 
 [taxonomies]
 tags = ["notes"]
 +++
-- [Note Taking in VSCode](#note-taking-in-vscode)
-    - [Visual Studio Code](#visual-studio-code)
-    - [Dedicated Note Taking Applications](#dedicated-note-taking-applications)
-    - [Setting it all up](#setting-it-all-up)
-        - [VSNotes](#vsnotes)
-            - [Settings](#settings)
-            - [Snippets](#snippets)
-        - [Auto Preview](#auto-preview)
-        - [Notebooks](#notebooks)
-    - [Conclusion](#conclusion)
 
 tl;dr Installed some extensions and made some snippets to make a really nice
 note taking experience. Exact changes needed are [below](#setting-it-all-up).

@@ -5,6 +5,12 @@ This is the content of my blog site.
 It uses [zola](https://www.getzola.org/) to generate the content, which needs to
 be installed as a separate binary, it is not part of this repository.
 
+The theme is connected via a submodule, therefore run the following to fetch it
+
+```shell
+> git submodule update --init --recursive
+```
+
 ## Content Creation
 
 ### Diagrams
