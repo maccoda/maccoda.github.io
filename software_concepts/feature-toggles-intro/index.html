@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+      <!-- Enable responsiveness on mobile devices-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+      <title>Maccoda Mail</title>
+
+      <!-- CSS -->
+      <link rel="stylesheet" href="https://maccoda.github.io/print.css" media="print">
+      <link rel="stylesheet" href="https://maccoda.github.io/poole.css">
+      <link rel="stylesheet" href="https://maccoda.github.io/hyde.css">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+      
+
+      
+<link rel="stylesheet" href="https://maccoda.github.io/style.css">
+
+<script src="/mermaid.min.js"></script>
+
+<script src="https://getinsights.io/static/js/insights.js"></script>
+<script>
+    var locationString = window.location.toString();
+    insights.init('yov5Y1hNA4UC4Hu0', { disabled: locationString.includes('localhost') || locationString.includes('127.0.0.1')});
+    insights.trackPages();
+</script>
+
+
+    </head>
+
+    <body class="theme-base-09 ">
+        
+            <div class="sidebar">
+                <div class="container sidebar-sticky">
+                    <div class="sidebar-about">
+                        
+                            <a href="https:&#x2F;&#x2F;maccoda.github.io"><h1>Maccoda Mail</h1></a>
+                            
+                            <p class="lead">Sending out some thoughts and learnings</p>
+                            
+                        
+                    </div>
+
+                    <ul class="sidebar-nav">
+                        
+    
+        <a href="https:&#x2F;&#x2F;github.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;GitHub-Mark-32px.png" alt=GitHub height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;gitlab.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;gitlab-icon-1-color-black-rgb.svg" alt=Gitlab height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;dev.to&#x2F;maccoda" style="display: inline-block;">
+            <img src="https:&#x2F;&#x2F;d2fltix0v2e0sb.cloudfront.net&#x2F;dev-badge.svg" alt=Dev.to blog height="30" width="30"/>
+        </a>
+    
+
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div class="content container">
+            
+<a href="..">▲ up</a>
+<div class="post">
+    <h1 class="post-title">Why you no longer need feature branches</h1>
+    <span class="post-date">2020-07-11 - 5 mins read</span>
+    <p>The core of what software engineers do is add new and improved features to a service or application. We add a feature the customer requested or address some technical debt. Some of these features can take hours to complete whilst others weeks. All the while you are part of a whole team working on numerous features at once, so the question comes how do merge all these features together once they are ready?</p>
+<h2 id="feature-branches">Feature Branches</h2>
+<p>One such option is to use feature branches, of the popular workflow <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow">Gitflow</a>, where a new branch is forked off the main branch and all feature development completed on this branch. The branch is then merged back on when the feature is completed. The benefit here is the isolation from the main branch so it is not disturbed with a half complete feature. It also means that as each feature is completed the merge request only needs to focus on the feature being merged and is independent from any other features that are being worked on in parallel.</p>
+<p>There are some points of concern here. If you are the lucky or unlucky one, your choice, working on the larger feature then you are constantly needing to merge changes from the main branch as each new smaller feature, bug fix, or any work is committed. This adds a fair bit of churn to this workflow as the developer on this larger feature will be going back and forth between solving merge conflicts and implementing the feature.</p>
+<p>This then extends the time it takes for the feature to be completed, leading to the second concern that we end up having long lived feature branches and we start to lose continuous integration. The longer a feature branch lives the more it diverges and the greater the risk of the merge. One way we can definitely improve this is the feature definition process to make these as small as possible but that is separate from the point of this article.</p>
+<h2 id="enter-feature-toggles">Enter Feature Toggles</h2>
+<p>As continuous delivery has become a more prevalnt concept other solutions have developed working on getting these features out as quickly as possible. What this has resulted in is the notion of feature toggles.</p>
+<p>Feature toggles at its simplest can be thought of as a switch. It is either off or on. This switch controls whether or not the feature is off or on in our application. Feature toggles have greater functionality than this but let's explore the benefits before we delve into those.</p>
+<p>A major benefit with feature toggles is its enabling of main branch development, continuous integration just got a whole lot easier. How do we do this? When we start work on our new feature first thing we do is create a feature toggle and wrap our changes in a conditional on the state of the toggle.</p>
+<pre><code>if (featureToggleService.isLaunched(&quot;NEW_HEADER&quot;) {
+	addHeader(document)
+}
+</code></pre>
+<p>By doing this it means that we can implement the feature over several commits but since the feature toggle is off in production our new feature code isn't activate in production. This also means that the changes become smaller meaning those merge conflicts should be less and less.</p>
+<p>The biggest benefit is the separation of feature work completion and feature launch. With the feature branch model it wouldn't be unheard of to block the deployment to production or block the merge to the main branch until business, product, or testing team are ready for the launch. This can lead to several problematic circumstances, we have a big bang deployment to production containing a lot of changes so if something does go wrong it is harder to pinpoint the exact issue, or in the case the branch isn't merged the developers have to keep this feature branch up to date well after the feature work has been completed. Feature toggles on the other hand allow us to push our code out to production even when it is incomplete. Once the work is completed we can then hand control over to the interested team who is able to be responsible for launching that feature by simply flicking the switch. Decoupling the code completion to the feature launch entirely.</p>
+<p>Another element is the safety lever feature toggles provide. In the feature branch model we need to revert all commits and push it through the pipeline if an issues was found. For the feature toggle it is yet again a simple flick of the switch. Not only is there less time and risk in this &quot;roll back&quot; but it can also be controlled by anyone responsible for the feature and not just the engineering team.</p>
+<h2 id="other-functionalities-of-feature-toggles">Other functionalities of feature toggles</h2>
+<p>Hopefully I have been able to show the benefit of feature toggles however the above is not the only benefits we get.</p>
+<p>Feature toggles can typically be dialed up progressively, meaning we are able to test it on a smaller audience to see if all goes well prior to everyone getting the change. An example being we could give the new feature to 10% of the customer base, then after an hour move to 50%, etc. Giving even more confidence when launching these features.</p>
+<p>We can also usually override the controls for a feature toggle. That is if the testing team want to test the change for a certain test customer or the UX team want to test how actual customers interact with the change this can be done without affecting all customers.</p>
+<p>Depending on which feature toggle service you use there may be even more options available, or you might find your company already has one you can improve.</p>
+<h2 id="some-feature-toggle-services">Some Feature Toggle Services</h2>
+<p>Below are a few of the feature toggle services I have heard of:</p>
+<ul>
+<li><a href="https://www.split.io/">Split.io</a></li>
+<li><a href="https://launchdarkly.com/">Launch Darkly</a></li>
+</ul>
+<p>There are plenty more just have a search for &quot;feature toggle service&quot;, it is also sometimes called &quot;feature flag&quot;</p>
+
+</div>
+
+        </div>
+
+    </body>
+
+</html>

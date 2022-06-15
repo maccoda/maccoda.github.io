@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+      <!-- Enable responsiveness on mobile devices-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+      <title>Maccoda Mail</title>
+
+      <!-- CSS -->
+      <link rel="stylesheet" href="https://maccoda.github.io/print.css" media="print">
+      <link rel="stylesheet" href="https://maccoda.github.io/poole.css">
+      <link rel="stylesheet" href="https://maccoda.github.io/hyde.css">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+      
+
+      
+<link rel="stylesheet" href="https://maccoda.github.io/style.css">
+
+<script src="/mermaid.min.js"></script>
+
+<script src="https://getinsights.io/static/js/insights.js"></script>
+<script>
+    var locationString = window.location.toString();
+    insights.init('yov5Y1hNA4UC4Hu0', { disabled: locationString.includes('localhost') || locationString.includes('127.0.0.1')});
+    insights.trackPages();
+</script>
+
+
+    </head>
+
+    <body class="theme-base-09 ">
+        
+            <div class="sidebar">
+                <div class="container sidebar-sticky">
+                    <div class="sidebar-about">
+                        
+                            <a href="https:&#x2F;&#x2F;maccoda.github.io"><h1>Maccoda Mail</h1></a>
+                            
+                            <p class="lead">Sending out some thoughts and learnings</p>
+                            
+                        
+                    </div>
+
+                    <ul class="sidebar-nav">
+                        
+    
+        <a href="https:&#x2F;&#x2F;github.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;GitHub-Mark-32px.png" alt=GitHub height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;gitlab.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;gitlab-icon-1-color-black-rgb.svg" alt=Gitlab height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;dev.to&#x2F;maccoda" style="display: inline-block;">
+            <img src="https:&#x2F;&#x2F;d2fltix0v2e0sb.cloudfront.net&#x2F;dev-badge.svg" alt=Dev.to blog height="30" width="30"/>
+        </a>
+    
+
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div class="content container">
+            
+<a href="..">▲ up</a>
+<div class="post">
+    <h1 class="post-title">Deploying Micronaut Application to Heroku</h1>
+    <span class="post-date">2019-03-11 - 6 mins read</span>
+    <p><a href="http://micronaut.io/">Micronaut</a> is a great JVM framework I was recently introduced to. It has been
+designed with the intention to fit into the modern day micro-service and
+serverless architecture with its big selling point being compile time dependency
+injection. If you have ever used something like Spring Boot you will know what a
+difference this will make to start up times. However this post is about
+deploying these apps to Heroku. Once I have had some more experience in the
+framework I will write another post about making an application with it.
+In lieu of that, I would really recommend giving it a try and reach out if you
+have any blockers.</p>
+<p>For this post I am assuming you are familiar with <a href="https://www.heroku.com/">Heroku</a> as I won't go in
+depth about setting it up. However that is the beauty of this service is they
+make it really simple to get started which is great for hobby projects.</p>
+<h2 id="creating-the-application">Creating the Application</h2>
+<p>Creating the app is very simple as with many frameworks. Micronaut provide a CLI
+tool and a <a href="https://guides.micronaut.io/index.html">guide</a> for creating your first application using this. Again I won't
+go more in depth into this but it is very important to follow this <a href="https://guides.micronaut.io/index.html">guide</a>
+otherwise your experience may differ and likely be more difficult.</p>
+<p>The important part of using the CLI tool is that is generates the base project
+and along with that is provides the <code>Dockerfile</code> that can be used to build a
+deployed image. It is a very simple <code>Dockerfile</code> but just highlights the
+focus on simplicity in the modern environments provided by Micronaut.</p>
+<h2 id="first-attempt-to-deploy-to-heroku">First Attempt to deploy to Heroku</h2>
+<p>My first attempt as the naming of this sections forbodes was not all that
+successful and led to a few weird issues. Let's start at the beginning.</p>
+<p>Choosing Heroku as the service to manage my deployments was primarily driven by
+simplicity. To deploy my first app was as simple as <code>git push heroku master</code>
+(after some minimal set up of course). This application should be no different I
+thought, it is a Gradle application and Heroku natively supports with this a
+Gradle build pack. Unfortunately not quite so, they know how to support Spring
+applications but if none is detected you are in charge of telling the build pack
+how to build your application. Which is a good choice and again is made simple
+by enforcing a convention.</p>
+<p><em>If Heroku does not how to build your application you define a <code>stage</code> Gradle
+task</em></p>
+<p>Of course I am not the first person to deploy a non-Spring application to Heroku
+so there is a simple guide. For a Micronaut application the only required part
+however is defining the <code>stage</code> task and its dependencies.</p>
+<pre data-lang="groovy" class="language-groovy "><code class="language-groovy" data-lang="groovy">task stage(dependsOn: [&#x27;build&#x27;, &#x27;clean&#x27;])
+build.mustRunAfter clean
+</code></pre>
+<p>That was pretty simple!</p>
+<p>Now if you were anything like me and just want to get your application out there
+you would try to deploy this shortly after. In doing this I started to find
+where most of my issues lay. After the deployment I attempted to check the
+health endpoint and was receiving a fat nothing, my first thoughts were, 'Does
+it know how to run my application?'</p>
+<h3 id="defining-the-procfile">Defining the Procfile</h3>
+<p>For those unfamiliar with Heroku, they have a notion of a <code>Procfile</code> which
+defines which commands to run to start your application(s). Akin to that you
+would write for a build pipeline.</p>
+<p>First thing I thought here is I know I was able to run my application through
+Gradle using the <code>run</code> command so let's first try that.</p>
+<pre data-lang="yaml" class="language-yaml "><code class="language-yaml" data-lang="yaml">web: .&#x2F;gradlew run
+</code></pre>
+<p>Immediately I deployed again and tested the health endpoint. Same result...</p>
+<h3 id="finding-the-error">Finding the Error</h3>
+<p>It turned out the error was staring me in the face the whole time in the
+deployment logs that I clearly do not pay the required attention to. When you
+perform the git deployment you don't actually get all the logs of the container
+you will need to use <code>heroku logs --tail</code> to get these, and they are incredibly
+useful!</p>
+<p>Littered throughout the logs I had occurrences of <code>Error R14 (Memory quota exceeded)</code>. Not only that, it did not only appear during the execution of the
+application but actually when trying to build the application!</p>
+<p>Now of course I could purchase the plan providing me with more memory but this
+was a hobby project. Further that is almost always the cheat's way out as there
+is probably something better you can do before just upping allocated resources.</p>
+<p>The reason for this issue I can only assume is because of the manner in which
+Micronaut builds your application. A lot of the heavy lifting is done during
+compile time giving you super fast start up times. However I was now pushing all
+this load onto the Heroku containers for which I had limited resources for.</p>
+<h2 id="getting-the-application-deployed">Getting the Application Deployed</h2>
+<p>After realising I would need to perform the staging on my local machine I
+started looking at different methods of deploying to Heroku. As it turns out
+they provide you access to a container registry for which you can push images
+and then release them for your application.</p>
+<p>The process to deploy a container is as follows:</p>
+<ol>
+<li>Define your deployable image</li>
+<li>Build the artifacts needed for the image and consequently build the
+deployable image</li>
+<li>Push the deployable image to the registry</li>
+<li>Release the image to the deployed environment</li>
+</ol>
+<p>This process is made extremely simple by Micronaut and Heroku! I was able to
+script it in 3 lines!</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">.&#x2F;gradlew stage
+heroku container:push web
+heroku container:release web
+</code></pre>
+<p>These define the last 3 steps of the process above but where is our image
+definition? It is the <code>Dockerfile</code> that Micronaut generated for us on the first
+build!</p>
+<pre data-lang="Dockerfile" class="language-Dockerfile "><code class="language-Dockerfile" data-lang="Dockerfile">FROM openjdk:8u171-alpine3.7
+RUN apk --no-cache add curl
+COPY build&#x2F;libs&#x2F;*-all.jar myapp-kt.jar
+CMD java ${JAVA_OPTS} -jar myapp-kt.jar
+</code></pre>
+<p>All this <code>Dockerfile</code> does is simply copy the built artifact from the <code>stage</code>
+task (which is combined into a single JAR ending in <code>-all</code>).</p>
+<p>Finally we just need to update the <code>Procfile</code> as we do not need to build
+anything anymore, but rather just need to simply execute the JAR. Of course be
+aware there is a version appended.</p>
+<pre data-lang="yaml" class="language-yaml "><code class="language-yaml" data-lang="yaml">web: java -jar build&#x2F;libs&#x2F;myapp-kt-0.1-all.jar
+</code></pre>
+<p>Once you have updated the <code>Procfile</code>, deploy to Heroku again and you should find
+your application up and running!</p>
+<h2 id="summary">Summary</h2>
+<p>To recap what we managed to achieve. We built our Micronaut application
+following the provided guide. Then utilizing what was provided from the template
+built a deployable Docker image which could then deploy to Heroku!</p>
+
+</div>
+
+        </div>
+
+    </body>
+
+</html>

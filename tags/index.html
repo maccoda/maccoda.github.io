@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+      <!-- Enable responsiveness on mobile devices-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+      <title>Maccoda Mail</title>
+
+      <!-- CSS -->
+      <link rel="stylesheet" href="https://maccoda.github.io/print.css" media="print">
+      <link rel="stylesheet" href="https://maccoda.github.io/poole.css">
+      <link rel="stylesheet" href="https://maccoda.github.io/hyde.css">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+      
+
+      
+<link rel="stylesheet" href="https://maccoda.github.io/style.css">
+
+<script src="/mermaid.min.js"></script>
+
+<script src="https://getinsights.io/static/js/insights.js"></script>
+<script>
+    var locationString = window.location.toString();
+    insights.init('yov5Y1hNA4UC4Hu0', { disabled: locationString.includes('localhost') || locationString.includes('127.0.0.1')});
+    insights.trackPages();
+</script>
+
+
+    </head>
+
+    <body class="theme-base-09 ">
+        
+            <div class="sidebar">
+                <div class="container sidebar-sticky">
+                    <div class="sidebar-about">
+                        
+                            <a href="https:&#x2F;&#x2F;maccoda.github.io"><h1>Maccoda Mail</h1></a>
+                            
+                            <p class="lead">Sending out some thoughts and learnings</p>
+                            
+                        
+                    </div>
+
+                    <ul class="sidebar-nav">
+                        
+    
+        <a href="https:&#x2F;&#x2F;github.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;GitHub-Mark-32px.png" alt=GitHub height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;gitlab.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;gitlab-icon-1-color-black-rgb.svg" alt=Gitlab height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;dev.to&#x2F;maccoda" style="display: inline-block;">
+            <img src="https:&#x2F;&#x2F;d2fltix0v2e0sb.cloudfront.net&#x2F;dev-badge.svg" alt=Dev.to blog height="30" width="30"/>
+        </a>
+    
+
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div class="content container">
+            
+<h1>Tags</h1>
+<ul>
+    
+    <li>
+        Tdd
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;software_concepts&#x2F;tdd&#x2F;">
+                    Intro to the basics of TDD
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Architecture
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;software_concepts&#x2F;basic-layered-architecture&#x2F;">
+                    Introduction to Layered Architecture
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Continuous delivery
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;software_concepts&#x2F;feature-toggles-intro&#x2F;">
+                    Why you no longer need feature branches
+                </a>
+            </li>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;speed-up-cd-heroku&#x2F;">
+                    Speed up your Gitlab pipelines to Heroku
+                </a>
+            </li>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;ci-cd&#x2F;">
+                    How was I so wrong about CI and what I learnt about CD
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Continuous deployment
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;speed-up-cd-heroku&#x2F;">
+                    Speed up your Gitlab pipelines to Heroku
+                </a>
+            </li>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;ci-cd&#x2F;">
+                    How was I so wrong about CI and what I learnt about CD
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Continuous integration
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;ci-cd&#x2F;">
+                    How was I so wrong about CI and what I learnt about CD
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Cross compilation
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;cross-compilation&#x2F;">
+                    Cross Compilation for Rust (Windows on Linux)
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Dependency injection
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;software_concepts&#x2F;dependency-injection&#x2F;">
+                    Why would I even use dependency injection?
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Deployment
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;deploying-micronaut-heroku&#x2F;">
+                    Deploying Micronaut Application to Heroku
+                </a>
+            </li>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;managing-local-deployments&#x2F;">
+                    Managing Local Heroku Deployments
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Design
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;software_concepts&#x2F;demeters-law&#x2F;">
+                    Exploring how to use the Law of Demeter
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Development process
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;premature-gold-plating&#x2F;">
+                    Don&#x27;t fret over it not being perfect
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Documentation
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;documentation&#x2F;">
+                    Writing Rust Documentation
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Feature flag
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;feature-toggle-mistakes&#x2F;">
+                    Common traps to avoid when using feature toggles
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Feature flags
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;software_concepts&#x2F;feature-toggles-intro&#x2F;">
+                    Why you no longer need feature branches
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Feature toggle
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;feature-toggle-mistakes&#x2F;">
+                    Common traps to avoid when using feature toggles
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Feature toggles
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;software_concepts&#x2F;feature-toggles-intro&#x2F;">
+                    Why you no longer need feature branches
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Frameworks
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;rust-web-frameworks&#x2F;">
+                    Making microservices in Rust
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Functional programming
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;fp-oo-must-know&#x2F;">
+                    Valuable functional programming basics every developer should know
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Gitlab
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;speed-up-cd-heroku&#x2F;">
+                    Speed up your Gitlab pipelines to Heroku
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Gui
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;relm-gui&#x2F;">
+                    Simple GUI in Relm
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Heroku
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;speed-up-cd-heroku&#x2F;">
+                    Speed up your Gitlab pipelines to Heroku
+                </a>
+            </li>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;deploying-micronaut-heroku&#x2F;">
+                    Deploying Micronaut Application to Heroku
+                </a>
+            </li>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;managing-local-deployments&#x2F;">
+                    Managing Local Heroku Deployments
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Http
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;http-status-good-usage&#x2F;">
+                    Some good things to remember when using HTTP statuses
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Immutability
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;software_concepts&#x2F;immutability&#x2F;">
+                    Making it Immutable
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Iterative development
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;premature-gold-plating&#x2F;">
+                    Don&#x27;t fret over it not being perfect
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Kotlin
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;migrating-to-kotlin&#x2F;">
+                    Migrating your project from Java to Kotlin
+                </a>
+            </li>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;wrapper-classes&#x2F;">
+                    Wrapping primitives in domain objects
+                </a>
+            </li>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;kotlin-constructor-validation&#x2F;">
+                    Kotlin class validation in initialization
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Law of demeter
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;software_concepts&#x2F;demeters-law&#x2F;">
+                    Exploring how to use the Law of Demeter
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Micronaut
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;deploying-micronaut-heroku&#x2F;">
+                    Deploying Micronaut Application to Heroku
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Notes
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;note-taking&#x2F;">
+                    Note Taking in Visual Studio Code
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Raspberry pi
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;rust-raspberrypi&#x2F;">
+                    Binding Raspberry Pi Libraries
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Rust
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;rust-web-frameworks&#x2F;">
+                    Making microservices in Rust
+                </a>
+            </li>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;documentation&#x2F;">
+                    Writing Rust Documentation
+                </a>
+            </li>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;rust-raspberrypi&#x2F;">
+                    Binding Raspberry Pi Libraries
+                </a>
+            </li>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;cross-compilation&#x2F;">
+                    Cross Compilation for Rust (Windows on Linux)
+                </a>
+            </li>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;relm-gui&#x2F;">
+                    Simple GUI in Relm
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Testing
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;software_concepts&#x2F;tdd&#x2F;">
+                    Intro to the basics of TDD
+                </a>
+            </li>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;software_concepts&#x2F;test-doubles-and-stubs&#x2F;">
+                    Making your own test doubles and mocks
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Validation
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;kotlin-constructor-validation&#x2F;">
+                    Kotlin class validation in initialization
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+    <li>
+        Web development
+        <ul>
+            
+            <li>
+                <a href="https:&#x2F;&#x2F;maccoda.github.io&#x2F;http-status-good-usage&#x2F;">
+                    Some good things to remember when using HTTP statuses
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+    
+</ul>
+
+        </div>
+
+    </body>
+
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+      <!-- Enable responsiveness on mobile devices-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+      <title>Maccoda Mail</title>
+
+      <!-- CSS -->
+      <link rel="stylesheet" href="https://maccoda.github.io/print.css" media="print">
+      <link rel="stylesheet" href="https://maccoda.github.io/poole.css">
+      <link rel="stylesheet" href="https://maccoda.github.io/hyde.css">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+      
+
+      
+<link rel="stylesheet" href="https://maccoda.github.io/style.css">
+
+<script src="/mermaid.min.js"></script>
+
+<script src="https://getinsights.io/static/js/insights.js"></script>
+<script>
+    var locationString = window.location.toString();
+    insights.init('yov5Y1hNA4UC4Hu0', { disabled: locationString.includes('localhost') || locationString.includes('127.0.0.1')});
+    insights.trackPages();
+</script>
+
+
+    </head>
+
+    <body class="theme-base-09 ">
+        
+            <div class="sidebar">
+                <div class="container sidebar-sticky">
+                    <div class="sidebar-about">
+                        
+                            <a href="https:&#x2F;&#x2F;maccoda.github.io"><h1>Maccoda Mail</h1></a>
+                            
+                            <p class="lead">Sending out some thoughts and learnings</p>
+                            
+                        
+                    </div>
+
+                    <ul class="sidebar-nav">
+                        
+    
+        <a href="https:&#x2F;&#x2F;github.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;GitHub-Mark-32px.png" alt=GitHub height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;gitlab.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;gitlab-icon-1-color-black-rgb.svg" alt=Gitlab height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;dev.to&#x2F;maccoda" style="display: inline-block;">
+            <img src="https:&#x2F;&#x2F;d2fltix0v2e0sb.cloudfront.net&#x2F;dev-badge.svg" alt=Dev.to blog height="30" width="30"/>
+        </a>
+    
+
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div class="content container">
+            
+<a href="..">▲ up</a>
+<div class="post">
+    <h1 class="post-title">Migrating your project from Java to Kotlin</h1>
+    <span class="post-date">2021-03-07 - 7 mins read</span>
+    <p>I have been part of a few migrations of projects from Java to Kotlin in
+particular as I have convinced more teams of its value over Java. However I did
+not want to write another comparison article but rather assuming that you are
+undertaking this migration how you can tackle it. One of the great benefits here
+is that Kotlin is entirely interoperable with Java allowing you to not make the
+changes in a single grand rewrite effort. Instead you can address the changes
+piecemeal.</p>
+<p>This post has been split into two sections of <strong>traps</strong> to avoid when migrating
+and <strong>tricks</strong> to try. Not all sections may be relevant to your particular use
+case as some sections are focused on the tooling/frameworks that has been used,
+so please find the ones most applicable and hopefully it assists.</p>
+<h2 id="traps">Traps</h2>
+<p>First we shall cover the areas of migrations that teams have tripped up on
+unexpectedly and how they were overcome.</p>
+<h3 id="compilation-order">Compilation order</h3>
+<p>When working with a polyglot project it becomes important to understand the
+compilation order as this defines the allowed dependencies. When using tools
+such as Gradle I believe it is configurable using the <code>dependsOn</code> argument of
+the task. In my experience the standardised tooling has chosen the order to be
+Kotlin =&gt; Java and thus I shall cover the elements that this direction of
+dependency introduces.</p>
+<p>The output class files should be co-located and hence full interaction should be
+capable however there are many fancy tools in the JVM world that generate code
+or hook into the compilation cycle to alter the byte code (such as Lombok in the
+next section). It is important to know how these tools works in principle but
+also as it can lead to unexpected issues. Therefore comprehensively understand
+the tooling of the project prior to the migration to determine any of these such
+tools used in the Java toolchain as these will not be able to be used by the
+Kotlin classes as they are compiled prior to the tool being invoked.</p>
+<h3 id="lombok">Lombok</h3>
+<p><a href="https://projectlombok.org/">Lombok</a> is such a tool that hooks into the
+compilation cycle to generate boilerplate code within Java. Commonly used to
+generate getters, setters, and constructors. These files are generated as part
+of the Java compilation step, therefore all the Lombok generated code becomes
+inaccessible by Kotlin code in a polyglot project. This has led to several
+compilation errors of the nature of &quot;symbol not found&quot;. Now that you are aware
+of this trap in the migration these cryptic messages should ideally have a
+clearer cause.</p>
+<p>The best way to avoid this issue is to &quot;delombok&quot; your code as you migrate. It
+is not necessary to &quot;delombok&quot; the entire code base or even the entire file. The
+issue can simply be rectified by writing the required function explicitly as
+Lombok skips over the generation of functions that already exist.</p>
+<p>The following shows an object of performing just that, assume that our Kotlin
+code only needs access to the <code>getName()</code> function.</p>
+<pre data-lang="java" class="language-java "><code class="language-java" data-lang="java">@Value
+public class Person {
+  private final int id;
+  private final String name;
+  private final int age;
+}
+</code></pre>
+<p>Will be changed to the following to allow Kotlin access:</p>
+<pre data-lang="java" class="language-java "><code class="language-java" data-lang="java">@Value
+public class Person {
+  private final int id;
+  private final String name;
+  private final int age;
+
+  public String getName() {
+    return name;
+  }
+}
+</code></pre>
+<h4 id="builder-pattern">Builder pattern</h4>
+<p>Another commonly generated pattern via Lombok is the builder pattern. This is
+very useful in Java in particular to aide in readability when there are several
+parameters to construct an object. In Kotlin such a pattern is not required as
+the language itself supports this with <a href="https://kotlinlang.org/docs/functions.html#named-arguments">named arguments</a>. What this does mean
+however is when migrating such a class from Java to Kotlin you must implement
+the builder pattern within Kotlin as the Java classes cannot make use of the
+named arguments and further it also reduces the amount that is changed in each
+migration step.</p>
+<p>The following is an example of how to implement the builder pattern for a basic
+data class.</p>
+<pre data-lang="kotlin" class="language-kotlin "><code class="language-kotlin" data-lang="kotlin">data class Name(val first: String, val last: String) {
+
+  companion object {
+    fun builder() = Builder()
+
+      data class Builder(
+        var first: String? = null,
+        var second: String? = null
+        ) {
+
+        fun first(first: String) = apply { this.first = first }
+        fun second(second: String) = apply { this.second = second }
+        &#x2F;&#x2F; You can do better handling of null than this but I have found this
+        &#x2F;&#x2F; sufficient until the I get to migrate the calling class to Kotlin
+        fun build() = Name(first!!, second!!)
+      }
+    }
+}
+</code></pre>
+<h2 id="tricks">Tricks</h2>
+<p>Next up we will cover some tricks discovered to make the migration easier, in
+particular focusing on tooling that Kotlin already provides to make this
+simpler.</p>
+<h3 id="order-to-migrate">Order to migrate</h3>
+<p>Migrating a project can be a monumental task depending on the size of the code
+base, therefore it is important just as any other large changes that it be done
+in small, manageable chunks. The following is some general advice on how to
+tackle this migration.</p>
+<p><strong>Convert the value/data objects first</strong>. The principle here is that they have
+the fewest dependencies (ideally none), therefore moving these across should be
+simple. Also, typically to migrate a class it is greatly beneficial that the
+dependent (or imported) classes are already in Kotlin so none of the above traps
+occur.</p>
+<p><strong>Work your way outwards</strong>. Once all value/data classes have been converted
+choose classes that are closely related to it, ideally having only a few
+dependencies, moving gradually out to the entry point of the program.</p>
+<p><strong>Either convert or add functionality, never both.</strong> This is strongly aligned
+with the recommendation when refactoring (which converting a class is), that
+adding new functionality whilst also performing a refactoring creates two
+possible sources of error. In regards to migrating to Kotlin in particular this
+leads to a bloat in code reviews making it very difficult to see the
+functionality changes. Thus always perform the migration, then add the new
+functionality.</p>
+<h3 id="kotlin-compiler-plugins">Kotlin compiler plugins</h3>
+<p>Kotlin chose a few differing paradigms from Java which results in certain
+tooling being unable to work due to their leveraging of particular Java
+paradigms. The most obvious example is mocking frameworks in Java make use of
+the fact that they can create a subclass of the class to mock This cannot be
+done in Kotlin as easily as for Java as Kotlin has closed classes by default. To
+assist in this the Kotlin team have provided compiler plugins such as <a href="https://kotlinlang.org/docs/all-open-plugin.html">all-open</a>
+and <a href="https://kotlinlang.org/docs/no-arg-plugin.html">no-arg</a> to address these limitations when migrating. It also allows you to
+continue to make use of the more mature tooling in Java if you wish to.</p>
+<p>In saying this however I do recommend exploring Kotlin native
+libraries/frameworks where possible as these do provide a much better
+experience.</p>
+<h3 id="kotlin-jvm-annotations">Kotlin JVM annotations</h3>
+<p>Another major difference in the languages is that Kotlin does not have a notion
+of <code>static</code>, its <code>companion object</code> is similar but not the same. Therefore when
+interoperating with Java one may still wish to use static functions or static
+constants. Typically these will be placed in the companion object and need to be
+accessed through <code>MyClass.Companion.MY_CONSTANT</code>. There are annotations provided
+with the Kotlin standard library to make this look more like a Java class such
+as <code>MyClass.MY_CONSTANT</code> which then means that you do not need to change all
+call sites of constants and functions.</p>
+<p>For constants/static fields the <a href="https://kotlinlang.org/docs/java-to-kotlin-interop.html#static-fields"><code>@JvmField</code></a> annotation can be used and for
+static methods the <a href="https://kotlinlang.org/docs/java-to-kotlin-interop.html#static-methods"><code>@JvmStatic</code></a> annotation can be used.</p>
+<p>These annotations are not only there to provide aesthetics but also can improve
+your code. For example using <a href="https://kotlinlang.org/docs/java-to-kotlin-interop.html#overloads-generation"><code>@JvmOverloads</code></a> one can get all variations of a
+function generated for a Java class to consume. This is incredibly powerful for
+creating test data for example.</p>
+
+</div>
+
+        </div>
+
+    </body>
+
+</html>

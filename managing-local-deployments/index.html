@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+      <!-- Enable responsiveness on mobile devices-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+      <title>Maccoda Mail</title>
+
+      <!-- CSS -->
+      <link rel="stylesheet" href="https://maccoda.github.io/print.css" media="print">
+      <link rel="stylesheet" href="https://maccoda.github.io/poole.css">
+      <link rel="stylesheet" href="https://maccoda.github.io/hyde.css">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+      
+
+      
+<link rel="stylesheet" href="https://maccoda.github.io/style.css">
+
+<script src="/mermaid.min.js"></script>
+
+<script src="https://getinsights.io/static/js/insights.js"></script>
+<script>
+    var locationString = window.location.toString();
+    insights.init('yov5Y1hNA4UC4Hu0', { disabled: locationString.includes('localhost') || locationString.includes('127.0.0.1')});
+    insights.trackPages();
+</script>
+
+
+    </head>
+
+    <body class="theme-base-09 ">
+        
+            <div class="sidebar">
+                <div class="container sidebar-sticky">
+                    <div class="sidebar-about">
+                        
+                            <a href="https:&#x2F;&#x2F;maccoda.github.io"><h1>Maccoda Mail</h1></a>
+                            
+                            <p class="lead">Sending out some thoughts and learnings</p>
+                            
+                        
+                    </div>
+
+                    <ul class="sidebar-nav">
+                        
+    
+        <a href="https:&#x2F;&#x2F;github.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;GitHub-Mark-32px.png" alt=GitHub height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;gitlab.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;gitlab-icon-1-color-black-rgb.svg" alt=Gitlab height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;dev.to&#x2F;maccoda" style="display: inline-block;">
+            <img src="https:&#x2F;&#x2F;d2fltix0v2e0sb.cloudfront.net&#x2F;dev-badge.svg" alt=Dev.to blog height="30" width="30"/>
+        </a>
+    
+
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div class="content container">
+            
+<a href="..">▲ up</a>
+<div class="post">
+    <h1 class="post-title">Managing Local Heroku Deployments</h1>
+    <span class="post-date">2019-03-11 - 2 mins read</span>
+    <p>Recently I have using <a href="https://www.heroku.com/">Heroku</a> a fair bit on a hobby project I am working on and
+having a hard time getting comfortable with local deployments. As my project is
+starting to get a little more complex and actually useful I am wanting to make
+sure what I have deployed is something that works. Further to it I have a back end
+deployed separately from the front end application so I want to make sure they
+are in sync.</p>
+<p>All of this lands me at a point where I would love to build in a proper CI/CD
+pipeline for these projects, however I struggle to bring myself to it as I am
+lazy and couldn't find a short solution in the first 3.5 seconds
+:stuck_out_tongue_closed_eyes:. So I went for the next best thing, an
+over-engineered script that gives me some certainty in what I am releasing. This
+is what I wanted to share so hopefully someone who gets into the same position
+as myself has something pre-made for them.</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">#!&#x2F;usr&#x2F;bin&#x2F;env bash
+set -e
+
+echo &quot;Last release:&quot;
+cat .last-release
+echo
+stats=$(git status --porcelain)
+if [[ -z $stats ]]; then
+    echo &quot;Hit enter to continue with the release&quot;
+    read
+else
+    echo &quot;Workspace is dirty, stash or commit before release!&quot;
+    exit 1
+fi
+
+.&#x2F;ci.sh
+git push heroku master
+
+git log -n 1 &gt; .last-release
+git commit -a -m &quot;$(heroku releases -n 1)&quot;
+git push
+</code></pre>
+<p>It isn't by any means a replacement for a proper pipeline but it helped me feel
+better about my releases.</p>
+<p>Essentially all it is doing is ensuring that:</p>
+<ul>
+<li>You only release with a clean workspace. All changes you are running locally
+are deployed</li>
+<li>You can see what was last released by tracking the file</li>
+<li>A commit is only deployed if it passes the <code>ci.sh</code> script which for me usually
+contains running tests and linter</li>
+<li>A commit is also made containing the Heroku version that has been deployed</li>
+</ul>
+<p>Hope you may find this useful. Any ideas or improvements let me know!</p>
+
+</div>
+
+        </div>
+
+    </body>
+
+</html>

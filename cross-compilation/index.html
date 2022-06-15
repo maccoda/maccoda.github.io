@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+      <!-- Enable responsiveness on mobile devices-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+      <title>Maccoda Mail</title>
+
+      <!-- CSS -->
+      <link rel="stylesheet" href="https://maccoda.github.io/print.css" media="print">
+      <link rel="stylesheet" href="https://maccoda.github.io/poole.css">
+      <link rel="stylesheet" href="https://maccoda.github.io/hyde.css">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+      
+
+      
+<link rel="stylesheet" href="https://maccoda.github.io/style.css">
+
+<script src="/mermaid.min.js"></script>
+
+<script src="https://getinsights.io/static/js/insights.js"></script>
+<script>
+    var locationString = window.location.toString();
+    insights.init('yov5Y1hNA4UC4Hu0', { disabled: locationString.includes('localhost') || locationString.includes('127.0.0.1')});
+    insights.trackPages();
+</script>
+
+
+    </head>
+
+    <body class="theme-base-09 ">
+        
+            <div class="sidebar">
+                <div class="container sidebar-sticky">
+                    <div class="sidebar-about">
+                        
+                            <a href="https:&#x2F;&#x2F;maccoda.github.io"><h1>Maccoda Mail</h1></a>
+                            
+                            <p class="lead">Sending out some thoughts and learnings</p>
+                            
+                        
+                    </div>
+
+                    <ul class="sidebar-nav">
+                        
+    
+        <a href="https:&#x2F;&#x2F;github.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;GitHub-Mark-32px.png" alt=GitHub height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;gitlab.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;gitlab-icon-1-color-black-rgb.svg" alt=Gitlab height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;dev.to&#x2F;maccoda" style="display: inline-block;">
+            <img src="https:&#x2F;&#x2F;d2fltix0v2e0sb.cloudfront.net&#x2F;dev-badge.svg" alt=Dev.to blog height="30" width="30"/>
+        </a>
+    
+
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div class="content container">
+            
+<a href="..">▲ up</a>
+<div class="post">
+    <h1 class="post-title">Cross Compilation for Rust (Windows on Linux)</h1>
+    <span class="post-date">2017-05-13 - 4 mins read</span>
+    <p>Cross compilation always has an aura about it, being able to develop on one
+machine and be able to produce executables for all devices. I mean that was
+Java's selling point &quot;Write it once, run it everywhere&quot; (I probably got that one
+wrong but you get the point). This was one hurdle for me with Rust as I use a
+Linux desktop at work but I was to be able to make things that I can give family
+and friends so that they may benefit from it also. In particular a lot of
+corporate positions use Windows (myself included) meaning it is difficult to get
+my executables to work. However after a bit of reading and in particular the
+<a href="https://github.com/japaric/rust-cross">Cross Repository</a> I have managed to get cross compilation for Linux
+(Ubuntu) to Windows working and thought I would send this one out :).</p>
+<h2 id="building-with-cargo">Building with Cargo</h2>
+<p>For those not so familiar with Rust, Cargo is the build tool actually shipped
+with Rust. I must say I find this to be a very well planned and built build
+tool. It handle a lot of the common issues with the build process and makes it
+extremely simple to get applications built and running quickly. Essentially it
+add a lot more brain power to the <code>rustc</code> compiler, particularly in the
+department of dependency management and tasks (build, test, etc.).</p>
+<p>Where it comes in even more useful here is that when I want to build for a
+different target there is not much more work than a few commands and then simply
+add the <code>--target=&lt;target&gt;</code> argument and viola I have my cross compilation!</p>
+<h2 id="what-is-a-target">What is a Target?</h2>
+<p>Put simply the target is the target architecture that your executable is going to be running on. It is fairly common knowledge that my executable on a Linux machine can't run exactly on a Windows, and only sometimes on a Mac (Don't quote me on that last one). Again this is very well detailed in the <a href="https://github.com/japaric/rust-cross">Cross Repository</a> what Rust defines as targets but will have a quick summary here.</p>
+<p>Essentially it boils down to a few things. First and foremost the
+<strong>architecture</strong>. This is the architecture of the actual processor that is
+running your software. Is it a 32-bit or 64-bit machine? Or is it perhaps for an
+embedded platform and running on an ARM processor? Excitingly, all of these are
+possible targets for Rust!</p>
+<p>The other main aspect is the <strong>system</strong>, in here we separate Linux from Mac from Windows. Of course there are may others than just these ones but these are your main players. From these and some other characteristics we create a <strong>triple</strong> that explicitly defines a target.</p>
+<h2 id="cross-compiling">Cross-Compiling</h2>
+<p>Alight enough background, let's get into what needs to be done to cross compile.</p>
+<p><em>Now little disclaimer, I have only done this for my machine compiling for Windows on my Linux machine. I have not tried to the converse or any other combination.</em></p>
+<p>First off we need to add the target to your machine, in particular this adds the standard library for the intended target. Again thanks to the incredible tooling from the Rust community this is simple using <code>rustup</code>.</p>
+<pre><code>$ rustup target add x86_64-pc-windows-gnu
+</code></pre>
+<p>Next we need to get the <code>gcc</code> compiler for that target. If you are interested I found it fascinating the amount of targets gcc itself has as I looked through which was the correct package to get. Using a Debian system:</p>
+<pre><code>$ sudo apt-get install gcc-mingw-w64
+</code></pre>
+<p>You should then find in <code>/usr/lib/gcc</code> all your <code>gcc</code> targets.</p>
+<pre><code>[dmaccora:&#x2F;usr&#x2F;lib&#x2F;gcc] $ ls
+i686-w64-mingw32  x86_64-linux-gnu  x86_64-w64-mingw32
+</code></pre>
+<p>Next we need to change the Cargo configuration so that it uses the newly
+installed <code>gcc</code> linker instead of the system one. Of course we only want to use
+this for a particular target but of course Cargo has got this covered for us
+with its <a href="http://doc.crates.io/config.html">configuration options</a>. So it applies for all projects
+we place the configuration in <code>~/.cargo/config</code>. Don't worry if this file
+doesn't exist just create it new, Cargo has a default configuration it will be
+using unless otherwise specified (which is what we will do now). All that is needed to add the following two lines:</p>
+<pre><code>[target.x86_64-pc-windows-gnu]
+linker = &quot;x86_64-w64-mingw32-gcc&quot;
+</code></pre>
+<p>You will note that the linker matches the <code>gcc</code> target we found earlier (hopefully this is the general rule as that is how I managed to get it all working).</p>
+<p>Then finally we can build our crate for another target!</p>
+<pre><code>$ cargo build --target=x86_64-pc-windows-gnu
+</code></pre>
+
+</div>
+
+        </div>
+
+    </body>
+
+</html>

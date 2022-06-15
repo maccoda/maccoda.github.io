@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+      <!-- Enable responsiveness on mobile devices-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+      <title>Maccoda Mail</title>
+
+      <!-- CSS -->
+      <link rel="stylesheet" href="https://maccoda.github.io/print.css" media="print">
+      <link rel="stylesheet" href="https://maccoda.github.io/poole.css">
+      <link rel="stylesheet" href="https://maccoda.github.io/hyde.css">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+      
+
+      
+<link rel="stylesheet" href="https://maccoda.github.io/style.css">
+
+<script src="/mermaid.min.js"></script>
+
+<script src="https://getinsights.io/static/js/insights.js"></script>
+<script>
+    var locationString = window.location.toString();
+    insights.init('yov5Y1hNA4UC4Hu0', { disabled: locationString.includes('localhost') || locationString.includes('127.0.0.1')});
+    insights.trackPages();
+</script>
+
+
+    </head>
+
+    <body class="theme-base-09 ">
+        
+            <div class="sidebar">
+                <div class="container sidebar-sticky">
+                    <div class="sidebar-about">
+                        
+                            <a href="https:&#x2F;&#x2F;maccoda.github.io"><h1>Maccoda Mail</h1></a>
+                            
+                            <p class="lead">Sending out some thoughts and learnings</p>
+                            
+                        
+                    </div>
+
+                    <ul class="sidebar-nav">
+                        
+    
+        <a href="https:&#x2F;&#x2F;github.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;GitHub-Mark-32px.png" alt=GitHub height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;gitlab.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;gitlab-icon-1-color-black-rgb.svg" alt=Gitlab height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;dev.to&#x2F;maccoda" style="display: inline-block;">
+            <img src="https:&#x2F;&#x2F;d2fltix0v2e0sb.cloudfront.net&#x2F;dev-badge.svg" alt=Dev.to blog height="30" width="30"/>
+        </a>
+    
+
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div class="content container">
+            
+<a href="..">▲ up</a>
+<div class="post">
+    <h1 class="post-title">Exploring how to use the Law of Demeter</h1>
+    <span class="post-date">2020-03-21 - 5 mins read</span>
+    <p>First and foremost I should define exactly what the <a href="https://en.wikipedia.org/wiki/Law_of_Demeter">Law of Demeter</a> is. The Law of Demeter is a
+design principle of object orientated software, which is also known as the <strong>principle of least
+knowledge</strong>. The essence of the principle is that your code should only know about the classes it is
+directly dealing with and should not be overreaching into classes that those classes know. As with
+all design principles this is quite intellectual and is difficult to translate to the code we write
+day to day. Personally I try and find concrete patterns for these that I can use to check if I am
+either infringing or obeying the principle. The Law of Demeter has a pretty easy check if you are
+disobeying it:</p>
+<p><strong>If you see a chain of calls (several dots) on a single line you are most likely violating the Law of Demeter</strong></p>
+<p>A concrete example of this is something like</p>
+<pre data-lang="java" class="language-java "><code class="language-java" data-lang="java">boolean isGmailAccount = account.getProfile()
+                                .getEmail()
+                                .endsWith(&quot;gmail.com&quot;);
+</code></pre>
+<p>As you can see here our code has access to some <code>Account</code> class but this class also knows the
+internals of the <code>Account</code> class that is used to determine if it is a Gmail account. Checking
+against our rule you can easily see it violates the rule as there are <strong>3 dots</strong> for chained calls
+and 2 of those are accessing different classes.</p>
+<p>I want to make a quick note here that as per every rule there are exemptions. The key part of the
+above code is the call chain is accessing different underlying classes. This means that our code
+goes from only knowing about the <code>Account</code> class to now also knowing about the <code>Profile</code> and <code>Email</code>
+class. Said differently it means that our code is now coupled to the <code>Profile</code> and <code>Email</code> class and
+even their implementation. An example where there is a call chain but no extended class
+access is easily seen when using combinators on <code>Stream</code>s in Java</p>
+<pre data-lang="java" class="language-java "><code class="language-java" data-lang="java">List&lt;MovieTitle&gt; movieTitles = movies.stream()
+                                     .filter(Objects::notNull)
+                                     .map(Movie::getTitle)
+                                     .collect(toList());
+</code></pre>
+<h2 id="example">Example</h2>
+<p>I am going to do a quick example where we work for a bank and we want to send an email to a customer
+about our new deal if that customer has a checking account with the bank.</p>
+<div class="mermaid">
+classDiagram
+  Customer o-- "1..*" Account
+  Account -- AccountType
+  class AccountType{
+    CHECKING
+    SAVINGS
+  }
+</div>
+<p><em>This diagram is intentionally limited to not distract from the key elements.</em></p>
+<p>These class all seem like we can represent these as plain data objects, they contain some
+values and we just create a whole bunch of getters. This was exactly my typical approach as I
+thought &quot;I don't need my data classes to be very smart&quot;. So then to implement our requirement above
+we may need to write some code like this:</p>
+<pre data-lang="java" class="language-java "><code class="language-java" data-lang="java">public void sendPromoEmail(Customer customer) {
+  boolean shouldSendPromoEmail = customer.getAccounts()
+                                         .stream()
+                                         .filter(x -&gt; x.getType() == AccountType.CHECKING)
+                                         .findFirst()
+                                         .isPresent();
+  if (shouldSendPromoEmail) {
+    &#x2F;&#x2F; Build promo message ...
+    emailService.sendEmail(customer.getEmail(), promoMessage);
+  }
+}
+</code></pre>
+<p>This definitely does seem to do the job and we meet the requirements but if you look carefully this
+function doesn't quite satisfy the Law of Demeter. This function only knows about (or is coupled
+with) the <code>Customer</code> class. However because we choose to model our data with simple getters we need
+our function to know what is inside a <code>Customer</code>. This function is now coupled with how the
+<code>Customer</code> models the <code>Account</code>s it has and is also coupled with the representation of the
+<code>AccountType</code> of <code>Account</code>. This coupling is quite subtle and will typically go unnoticed, I
+am not even needing to import the <code>Account</code> class for this to work!</p>
+<p>The root of the problem here is that we chose to use <strong>dumb data classes</strong> that simply store data. I
+am not saying these don't work in all cases but I would urge you to consider if by doing so you end
+up in the same situation we are in here.</p>
+<p>To remove this unneeded coupling we will need the data classes to now tell us more about themselves
+rather than us ask about it.</p>
+<p>First thing we could do is change the <code>Account</code> class to tell us if it is a checking account.</p>
+<pre data-lang="java" class="language-java "><code class="language-java" data-lang="java">class Account {
+  private final AccountType type;
+  &#x2F;&#x2F; ...
+  public boolean isCheckingAccount() {
+    return type == AccountType.CHECKING;
+  }
+}
+</code></pre>
+<p>Then our function becomes:</p>
+<pre data-lang="java" class="language-java "><code class="language-java" data-lang="java">public void sendPromoEmail(Customer customer) {
+  boolean shouldSendPromoEmail = customer.getAccounts()
+                                         .stream()
+                                         .filter(Account::isCheckingAccount)
+                                         .findFirst()
+                                         .isPresent();
+  if (shouldSendPromoEmail) {
+    &#x2F;&#x2F; Build promo message ...
+    emailService.sendEmail(customer.getEmail(), promoMessage);
+  }
+}
+</code></pre>
+<p>Trust me I know this looks odd and what about all the other account types, does that mean we need to
+expand the <code>Account</code> interface for all of this? We may, but only if we ever use them of course. This
+encapsulation is a trade off as everything is. By creating this method the <code>AccountType</code> can be
+encapsulated withing the <code>Account</code> class, which means if we were ever change the representation or
+interface it would now only be the <code>Account</code> class we need to update. We don't need to go back to
+our <code>sendPromoEmail</code> function or any others that may be doing the same!</p>
+<p>We have now removed the coupling with the <code>AccountType</code> and the next to remove is the <code>Account</code>. To
+do this we will follow the same pattern but one up the chain. We now want the <code>Customer</code> class to
+tell us if it has a checking account rather than us ask for its internals.</p>
+<pre data-lang="java" class="language-java "><code class="language-java" data-lang="java">class Customer {
+  private final List&lt;Account&gt; accounts;
+  &#x2F;&#x2F; ...
+  public boolean hasCheckingAccount() {
+    return accounts.stream()
+                   .filter(Account::isCheckingAccount)
+                   .findFirst()
+                   .isPresent();
+  }
+}
+</code></pre>
+<p>Then our function becomes:</p>
+<pre data-lang="java" class="language-java "><code class="language-java" data-lang="java">public void sendPromoEmail(Customer customer) {
+  boolean shouldSendPromoEmail = customer.hasCheckingAccount();
+  if (shouldSendPromoEmail) {
+    &#x2F;&#x2F; Build promo message ...
+    emailService.sendEmail(customer.getEmail(), promoMessage);
+  }
+}
+</code></pre>
+<p>There we have it, we have removed the <code>Account</code> coupling in our function and it only knows about the
+<code>Customer</code> class and its interface. Now any changes to the <code>Account</code> class never reach this method
+and can ideally all be handled in the <code>Customer</code> class.</p>
+
+</div>
+
+        </div>
+
+    </body>
+
+</html>

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+      <!-- Enable responsiveness on mobile devices-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+      <title>Maccoda Mail</title>
+
+      <!-- CSS -->
+      <link rel="stylesheet" href="https://maccoda.github.io/print.css" media="print">
+      <link rel="stylesheet" href="https://maccoda.github.io/poole.css">
+      <link rel="stylesheet" href="https://maccoda.github.io/hyde.css">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+      
+
+      
+<link rel="stylesheet" href="https://maccoda.github.io/style.css">
+
+<script src="/mermaid.min.js"></script>
+
+<script src="https://getinsights.io/static/js/insights.js"></script>
+<script>
+    var locationString = window.location.toString();
+    insights.init('yov5Y1hNA4UC4Hu0', { disabled: locationString.includes('localhost') || locationString.includes('127.0.0.1')});
+    insights.trackPages();
+</script>
+
+
+    </head>
+
+    <body class="theme-base-09 ">
+        
+            <div class="sidebar">
+                <div class="container sidebar-sticky">
+                    <div class="sidebar-about">
+                        
+                            <a href="https:&#x2F;&#x2F;maccoda.github.io"><h1>Maccoda Mail</h1></a>
+                            
+                            <p class="lead">Sending out some thoughts and learnings</p>
+                            
+                        
+                    </div>
+
+                    <ul class="sidebar-nav">
+                        
+    
+        <a href="https:&#x2F;&#x2F;github.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;GitHub-Mark-32px.png" alt=GitHub height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;gitlab.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;gitlab-icon-1-color-black-rgb.svg" alt=Gitlab height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;dev.to&#x2F;maccoda" style="display: inline-block;">
+            <img src="https:&#x2F;&#x2F;d2fltix0v2e0sb.cloudfront.net&#x2F;dev-badge.svg" alt=Dev.to blog height="30" width="30"/>
+        </a>
+    
+
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div class="content container">
+            
+<a href="..">▲ up</a>
+<div class="post">
+    <h1 class="post-title">Making microservices in Rust</h1>
+    <span class="post-date">2018-05-01 - 17 mins read</span>
+    <p>This is a small idea that I have been wanting to put together for quite some
+time now and finally have managed to get the time and most importantly
+experience in Rust to finally try something a little more than just small
+projects. One area that I think Rust is really making a decent headway in in the
+web domain, which I am assuming is likely due to its origin from Firefox. So I
+wanted to see if I could put together a really basic CRUD micro-service doing
+the ever so original TODO functionality.</p>
+<p>My main goal from this project was to be able to try some larger scale crates
+available in the Rust ecosystem and perform some more typical enterprise
+activities of working with databases and HTTP requests in Rust, something I have
+usually been steering clear of. Further to this, I was really hoping that I
+could help some of these frameworks grow with some more examples of how to put
+them all together so hopefully can make it easier to pick up for new comers.</p>
+<p>If you aren't up for the read and would just like the code go check out the <a href="https://github.com/maccoda/micro-rs">repository</a>.</p>
+<p>So what were the frameworks that I wanted to explore?</p>
+<h2 id="diesel">Diesel</h2>
+<p><a href="https://diesel.rs/">Diesel</a> is one of the more popular <a href="https://en.wikipedia.org/wiki/Object-relational_mapping">ORM</a> in the Rust community. It has some
+great documentation to get set up and to understand how to use it. It also comes
+with a very handy CLI tool to assist in the setting up of a project and managing
+database migrations, which is great for keeping everything nice and uniform and
+automated. A great combination indeed!</p>
+<p>The <a href="http://diesel.rs/guides/getting-started/">getting started guide</a> for Diesel
+provides a solid foundation on how to put it all together so I won't try rewrite
+that, rather provide a light overview of the steps to be able to reproduce.</p>
+<h3 id="setting-up-the-migrations">Setting up the migrations</h3>
+<p>Following the guide the CLI tool will create an <code>up.sql</code> and <code>down.sql</code> in the
+<code>migrations</code> directory to handle our initial database migration.</p>
+<pre data-lang="shell" class="language-shell "><code class="language-shell" data-lang="shell">$ diesel migration generate tasks
+</code></pre>
+<p>This will generate the files and place them into a time stamped directory,
+appended with the name of the migration we gave, which was <code>tasks</code>. In here we
+want to put the SQL query to create our table and the opposing query to undo the
+change.</p>
+<p><code>up.sql</code></p>
+<pre data-lang="sql" class="language-sql "><code class="language-sql" data-lang="sql">CREATE TABLE tasks (
+  id SERIAL PRIMARY KEY,
+  task VARCHAR NOT NULL,
+  completed BOOLEAN NOT NULL DEFAULT &#x27;f&#x27;
+)
+</code></pre>
+<p><code>down.sql</code></p>
+<pre data-lang="sql" class="language-sql "><code class="language-sql" data-lang="sql">DROP TABLE tasks
+</code></pre>
+<h3 id="adding-the-models">Adding the Models</h3>
+<p>Following the remainder of the guide we get to develop the model of our Tasks
+which then allows us to use the CLI tool to generate our schema.</p>
+<p>We want to follow the recommended guide of having one type to represent the
+structure we want to query from the database and one type to represent the
+structure to insert into the database. These will be <code>Task</code> and <code>NewTask</code>
+respectively and will be put in the <code>model</code> module.</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">#[derive(Queryable)]
+pub struct Task {
+    id: i32,
+    task: String,
+    completed: bool,
+}
+
+#[derive(Insertable)]
+#[table_name = &quot;tasks&quot;]
+pub struct NewTask {
+    task: String,
+    completed: bool,
+}
+</code></pre>
+<h3 id="generating-the-schema">Generating the Schema</h3>
+<p>Once we have set up the models we can then go back again to the Diesel CLI to
+generate the schema for us which will provide the DSL that we will interact
+with.</p>
+<pre data-lang="shell" class="language-shell "><code class="language-shell" data-lang="shell">$ diesel print-schema &gt; src&#x2F;schema.rs
+</code></pre>
+<p>This will look at our source code and locate the <code>struct</code>s that are <code>Queryable</code>
+to determine the shape of our data. The resulting <code>schema.rs</code> should look like
+the following:</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">table! {
+    tasks (id) {
+        id -&gt; Integer,
+        task -&gt; Varchar,
+        completed -&gt; Bool,
+    }
+}
+</code></pre>
+<h3 id="adding-the-functionality">Adding the Functionality</h3>
+<p>The final part to the database aspect of our micro-service is to provide some
+functionality on interacting with the database with the CRUD operations. My
+implementation is a very basic one to allow me to associate these interactions
+with the model type.</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">impl Task {
+    pub fn all(conn: &amp;PgConnection) -&gt; Vec&lt;Task&gt; {
+        use schema::tasks::dsl::*;
+        tasks.load::&lt;Task&gt;(conn).expect(&quot;Could not load tasks&quot;)
+    }
+
+    pub fn create(conn: &amp;PgConnection, task: NewTask) {
+        use schema::tasks;
+        diesel::insert_into(tasks::table)
+            .values(&amp;task)
+            .execute(conn)
+            .expect(&quot;Unable to insert&quot;);
+    }
+
+    pub fn update(conn: &amp;PgConnection, task_id: i32, task_update: Task) -&gt; i32 {
+        use schema::tasks::dsl::*;
+        diesel::update(tasks.find(task_id))
+            .set((
+                task.eq(task_update.task),
+                completed.eq(task_update.completed),
+            ))
+            .execute(conn)
+            .expect(&quot;Failed to update&quot;);
+        task_update.id
+    }
+
+    pub fn delete(conn: &amp;PgConnection, task_id: i32) {
+        use schema::tasks::dsl::*;
+        diesel::delete(tasks.find(task_id))
+            .execute(conn)
+            .expect(&quot;Failed to delete&quot;);
+    }
+}
+</code></pre>
+<p>The above code shows a few different ways in which we can use the generated DSL
+to work with our data, or in the case of the <code>create</code> function, how we can use
+it without the DSL.</p>
+<p>Note that it is important that the DSL is only imported on the function scope
+and that when doing this ensure that the function parameters don't match any
+column in the schema to avoid any unexpected shadowing.</p>
+<h2 id="rocket">Rocket</h2>
+<p><a href="https://rocket.rs/">Rocket</a> is quite a popular web framework, for several reasons but one
+of course is the well polished website! It is pretty easy to get started with
+and handles a lot of the boiler plate through its powerful use of macros. This
+part of the project I cannot claim I developed a lot for as it does have a great
+<a href="https://rocket.rs/guide/state/#databases">tutorial</a> on the website for how to use Rocket with Diesel. So
+I will just provide some basic changes to this that I ended up applying.</p>
+<p>The first thing being that I wanted to use PostgreSQL which wasn't covered in
+the tutorial. This was a very minor deviation from the tutorial however because
+it was mainly handled in the Diesel section of the code which was already
+described previously. The biggest change here was changing the features that
+Diesel was compiled with:</p>
+<p><code>Cargo.toml</code></p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">diesel = { version = &quot;1.0.0&quot;, features = [&quot;postgres&quot;] }
+</code></pre>
+<p>The only other chunk related to this was the database connection pool that we used
+which was simply changed to a <code>PgConnection</code>.</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">type Pool = r2d2::Pool&lt;ConnectionManager&lt;PgConnection&gt;&gt;;
+</code></pre>
+<h3 id="managing-the-database-connection">Managing the Database Connection</h3>
+<p>From there I was able to follow the tutorial fairly closely. We start by
+ensuring that Rocket manages our database connection pool. This is as simple as
+adding it to <code>ignite</code> function.</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">type Pool = r2d2::Pool&lt;ConnectionManager&lt;PgConnection&gt;&gt;;
+fn init_pool() -&gt; Pool {
+    dotenv::dotenv().ok();
+    let database_url = env::var(&quot;DATABASE_URL&quot;).expect(&quot;DATABASE_URL must be set&quot;);
+    let manager = ConnectionManager::&lt;PgConnection&gt;::new(database_url);
+    r2d2::Pool::new(manager).expect(&quot;db pool&quot;)
+}
+
+pub fn start() {
+    rocket::ignite()
+        .manage(init_pool())
+        .launch();
+}
+</code></pre>
+<p>Now that Rocket is managing our state we want to be able to grab that from our
+requests. To do this in Rocket we need to implement the <code>FromRequest</code> trait for
+our database connection.</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">impl&lt;&#x27;a, &#x27;r&gt; FromRequest&lt;&#x27;a, &#x27;r&gt; for DbConn {
+    type Error = ();
+
+    fn from_request(request: &amp;&#x27;a Request&lt;&#x27;r&gt;) -&gt; request::Outcome&lt;DbConn, ()&gt; {
+        let pool = request.guard::&lt;State&lt;Pool&gt;&gt;()?;
+        match pool.get() {
+            Ok(conn) =&gt; Outcome::Success(DbConn(conn)),
+            Err(_) =&gt; Outcome::Failure((Status::ServiceUnavailable, ())),
+        }
+    }
+}
+</code></pre>
+<h3 id="adding-the-request-handlers">Adding the Request Handlers</h3>
+<p>Essentially the final part of this is to add in the request handlers. Thanks to
+Rocket's code generation this is quite easy to write. For example to add the
+request to return all the tasks the request would look like:</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">#[get(&quot;&#x2F;&quot;)]
+fn get_all_tasks(conn: DbConn) -&gt; Json&lt;Vec&lt;Task&gt;&gt; {
+    Json(Task::all(&amp;conn))
+}
+</code></pre>
+<p>Then we would update the <code>start</code> function to mount this route:</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">pub fn start() {
+    rocket::ignite()
+        .mount(&quot;&#x2F;tasks&quot;, routes![get_all_tasks])
+        .manage(init_pool())
+        .launch();
+}
+</code></pre>
+<h4 id="returning-some-data">Returning Some Data</h4>
+<p>However we have this new <code>Json</code> type that we are returning from our request so
+at the moment this won't compile. Let's go ahead and add that type and make our
+<code>Task</code> model serializable.</p>
+<p><em>Just as side note I wouldn't recommend in practice you have you database
+representation the same the model type returned from your request but for the
+sake of brevity for this walk through I will keep it this way</em></p>
+<p>To obtain the <code>Json</code> type we will add a dependency from Rocket,
+<code>rocket-contrib</code>, adding to our <code>Cargo.toml</code></p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[dependencies.rocket_contrib]
+version = &quot;0.3.6&quot;
+default-features = false
+features = [&quot;json&quot;]
+</code></pre>
+<p>Then we need to make our <code>Task</code> serializable, and our <code>NewTask</code> whilst we are at
+it. To do this we will use <code>serde</code> which is the standard serialization and
+de-serialization crate used in Rust. With a small tweak of our <code>Cargo.toml</code> and
+some added <code>derive</code>s to our type we are done.</p>
+<p><code>Cargo.toml</code></p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">serde = &quot;1.0&quot;
+serde_json = &quot;1.0&quot;
+serde_derive = &quot;1.0&quot;
+</code></pre>
+<p><code>model.rs</code></p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">#[derive(Deserialize, Serialize, Queryable)]
+pub struct Task {
+    id: i32,
+    task: String,
+    completed: bool,
+}
+
+#[derive(Deserialize, Serialize, Insertable)]
+#[table_name = &quot;tasks&quot;]
+pub struct NewTask {
+    task: String,
+    completed: bool,
+}
+</code></pre>
+<h4 id="adding-the-rest-of-the-requests">Adding the Rest of the Requests</h4>
+<p>Following the initial request we can add the remaining operations to create,
+update, and delete tasks.</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">#[post(&quot;&#x2F;&quot;, data = &quot;&lt;task&gt;&quot;)]
+fn create_task(task: Json&lt;NewTask&gt;, conn: DbConn) -&gt; Json&lt;String&gt; {
+    Task::create(&amp;conn, task.into_inner());
+    Json(&quot;Task added&quot;.to_owned())
+}
+
+#[put(&quot;&#x2F;&lt;id&gt;&quot;, data = &quot;&lt;task&gt;&quot;)]
+fn update_task(id: u32, task: Json&lt;Task&gt;, conn: DbConn) -&gt; Json&lt;i32&gt; {
+    let id = Task::update(&amp;conn, id as i32, task.into_inner());
+    Json(id)
+}
+
+#[delete(&quot;&#x2F;&lt;id&gt;&quot;)]
+fn delete_task(id: u32, conn: DbConn) -&gt; Json&lt;Value&gt; {
+    Task::delete(&amp;conn, id as i32);
+    Json(json!({&quot;status&quot;: &quot;ok&quot;}))
+}
+</code></pre>
+<p>Then finally don't forget to mount these routes when you start <code>rocket</code> and we
+have ignition!.</p>
+<h2 id="gotham">Gotham</h2>
+<p><a href="https://gotham.rs/">Gotham</a> is a web framework a bit newer on the scene. With one of the
+key differences between it and Rocket is that it targets <strong>only</strong> stable Rust.
+Whereas to get those really fancy macros with Rocket it is currently only able
+to run on nightly Rust, which may be a deal breaker for some. This is not to say
+this is the only differing aspect but a notable one.</p>
+<p>Being a bit newer, Gotham is still changing it's shape and structure as when
+writing this it was only <strong>v0.2</strong>. However they do provide numerous examples of
+how to use the framework in the several ways in which it was designed. Due to
+the youth of this framework some of the examples on the website are out of date
+as the framework changes but the <a href="https://github.com/gotham-rs/gotham/tree/master/examples">GitHub</a> does provide up to date
+examples. This is what I used to piece this one together.</p>
+<h3 id="finding-common-ground">Finding Common Ground</h3>
+<p>The way I approached this little project was to try the different web frameworks
+whilst keeping the same database interactions. Therefore it seemed sensible to
+extract the common database work and share that between the two frameworks.
+Therefore we will start with the current <code>model.rs</code> and keep it as similar as
+possible.</p>
+<h3 id="getting-it-started">Getting it started</h3>
+<p>As I was less familiar with this framework and the examples weren't yet as
+documented I thought I would try some nice and simple routing and basic
+responses for those endpoints but they didn't need to return anything.</p>
+<p>The first part was simply starting the framework, this looked a bit different
+but still pretty simple:</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">pub fn start() {
+    let addr = &quot;127.0.0.1:8000&quot;;
+    println!(&quot;Listening for requests at http:&#x2F;&#x2F;{}&quot;, addr);
+    gotham::start(addr, router())
+}
+</code></pre>
+<p>You will note there is a <code>router()</code> function which I have made no mention of,
+never fear I will explain it here! Rather than the dispersed approach for the
+routing that was used in Rocket where each route gets to be defined at the
+function that is to be executed, in Gotham we define the routes in a single
+function producing a <code>Router</code>. Whilst it looks different we are essentially
+doing the same thing as we had to mount all the routes in Rocket when starting
+it.</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">use gotham::router::Router;
+use gotham::router::builder::*;
+
+fn router -&gt; Router {
+    build_simple_router(|route|{
+        route.get(&quot;&#x2F;tasks&quot;).to(get_all_tasks);
+    })
+}
+</code></pre>
+<p>So now we have a simple route to the <code>get_all_tasks</code> request handler so we
+better define that on but first when we look into the documentation for Gotham
+it has a very clear definition of what a <code>Handler</code> must look like. It takes a
+<code>State</code> and returns a tuple of <code>(State, Response)</code>. Now we want to return a list
+of <code>Task</code>s, so thankfully this is made very simple by using the <code>IntoResponse</code>
+trait provided from Gotham. With a small tweak of our <code>model.rs</code> we can have our
+response type now be a <code>TaskList</code>.</p>
+<p><code>model.rs</code></p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">&#x2F;&#x2F; ...
+
+#[derive(Deserialize, Serialize)]
+pub struct TaskList {
+    pub list: Vec&lt;Task&gt;,
+}
+</code></pre>
+<p>Gotham uses <code>hyper</code> and <code>mime</code> crates to define its response structure so we
+will need to grab those.</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">extern crate hyper;
+extern crate mime;
+extern crate serde_json;
+
+use gotham::state::State;
+use gotham::http::response::create_response;
+use hyper::{Response, StatusCode};
+
+impl IntoResponse for TaskList {
+    fn into_response(self, state: &amp;State) -&gt; Response {
+        create_response(
+            &amp;state,
+            StatusCode::Ok,
+            Some((
+                serde_json::to_string(&amp;self.list)
+                    .expect(&quot;serialized product&quot;)
+                    .into_bytes(),
+                mime::APPLICATION_JSON,
+            )),
+        )
+    }
+}
+</code></pre>
+<p>Now we are ready to write our <code>Handler</code> to retrieve all the tasks.</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">fn get_all_tasks(state: State) -&gt; (State, TaskList) {
+    let tasks = vec![
+        Task {
+            id: 1,
+            task: &quot;Do homework&quot;.to_owned(),
+            completed: false,
+        },
+    ];
+    (state, tasks)
+}
+</code></pre>
+<h3 id="manage-the-database-connection">Manage the Database Connection</h3>
+<p>Now we want to connect this up so it actually reads from the database. Here I
+followed a similar approach to what I had seen from working with Rocket, which I
+am sure is probably not the best or intended method with Gotham but it has
+seemed to do the job.</p>
+<p><em>After putting this together I did actually see that Gotham does have some work
+in their GitHub repository about getting Diesel to connect with it.</em></p>
+<p>The way Gotham manages state is though its definition of a <code>Handler</code> as we have
+already seen. Every <code>Handler</code> is given the state, what we need to do is tell
+Gotham that we would like to add our database connection to part of that state
+for it to manage. After some playing around I found the simplest way to do this
+is through middleware.</p>
+<p>In Gotham I have understood the concept of <code>middleware</code> as a construct to allow
+the management of the requests. They are called before the request is sent to
+the <code>Handler</code> and if desired can actually manage the response of the <code>Handler</code>.
+The Gotham framework manages the calling of these we simple have to implement
+the <code>Middleware</code> trait and add it to our <code>Router</code>.</p>
+<p>First of all we want our database connection pool to be able to be managed. To
+do so we add <code>gotham-derive</code> to our dependencies and create the following
+struct:</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">#[derive(StateData)]
+struct PoolState(Pool);
+</code></pre>
+<p>Now we are able to add <code>PoolState</code> to the Gotham <code>State</code>. Next we create our
+middleware and implement it. The connection pool is created in the exact same
+manner as it was when using Rocket.</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">use gotham::middleware::Middleware;
+
+#[derive(Clone, NewMiddleware)]
+struct DbConnMiddleware;
+
+impl Middleware for DbConnMiddleware {
+    fn call&lt;Chain&gt;(self, mut state: State, chain: Chain) -&gt; Box&lt;HandlerFuture&gt;
+    where
+        Chain: FnOnce(State) -&gt; Box&lt;HandlerFuture&gt;,
+    {
+        if !state.has::&lt;PoolState&gt;() {
+            &#x2F;&#x2F; Initialize it
+            state.put(PoolState(init_pool()));
+        }
+        chain(state)
+    }
+}
+</code></pre>
+<p>Finally we modify our <code>Router</code> to use this middleware:</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">use gotham::pipeline::single::single_pipeline;
+
+fn router() -&gt; Router {
+    let (chain, pipelines) = single_pipeline(new_pipeline().add(DbConnMiddleware).build());
+    build_router(chain, pipelines, |route| {
+        route.get_or_head(&quot;&#x2F;&quot;).to(index);
+        route.get(&quot;&#x2F;tasks&quot;).to(get_all_tasks);
+    })
+}
+</code></pre>
+<h3 id="adding-the-read-all-functionality">Adding the Read All Functionality</h3>
+<p>Now that we have access to the database through the <code>State</code> it is actually very
+simple to implement the CRUD functionality. First we create a simple helper
+method to extract the database connection from the state.</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">fn db_conn(state: &amp;State) -&gt; Option&lt;DbConn&gt; {
+    state.borrow::&lt;PoolState&gt;().get().ok().map(|x| DbConn(x))
+}
+</code></pre>
+<p>Then we can complete our read all functionality:</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">fn get_all_tasks(state: State) -&gt; (State, TaskList) {
+    let conn = db_conn(&amp;state).expect(&quot;Failed with DB connection&quot;);
+    let tasks = TaskList {
+        list: Task::all(&amp;conn),
+    };
+    (state, tasks)
+}
+</code></pre>
+<h3 id="using-path-variables">Using Path Variables</h3>
+<p>The finally piece of the puzzle is implementing the update and delete where we
+specify the ID of the task we want to use. This is provided in the URL path.
+This is very easy to implement and reuse for both of these by creating a struct
+that Gotham will populate from the path.</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">#[derive(Deserialize, StateData, StaticResponseExtender)]
+struct PathId {
+    id: u32,
+}
+</code></pre>
+<p>Followed by changing the <code>Router</code> definition to expect there to be a path
+variable</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">&#x2F;&#x2F; ... previous router definition
+route
+    .put(&quot;&#x2F;task&#x2F;:id&quot;)
+    .with_path_extractor::&lt;PathId&gt;()
+    .to(update_task);
+route
+    .delete(&quot;&#x2F;task&#x2F;:id&quot;)
+    .with_path_extractor::&lt;PathId&gt;()
+    .to(delete_task);
+&#x2F;&#x2F; ... rest of definition
+</code></pre>
+<p>Then we can define our delete to look like this:</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">fn delete_task(mut state: State) -&gt; (State, Response) {
+    let PathId { id } = PathId::take_from(&amp;mut state);
+    let conn = db_conn(&amp;state).expect(&quot;Failed with DB connection&quot;);
+    Task::delete(&amp;conn, id as i32);
+    let resp = create_response(&amp;state, StatusCode::Ok, None);
+    (state, resp)
+}
+</code></pre>
+<h3 id="using-the-request-body">Using the Request Body</h3>
+<p>You may have noticed the update and create have yet to be addressed and this is
+because these needed to extract the <code>Task</code> to create or update from the body of
+the request. This was a little bit more clunky than simply adding annotations
+but once I got around it, it wasn't too bad at all.</p>
+<p>Firstly you must know that Gotham actually stores the <code>Body</code> as part of the
+<code>State</code> provided to the handler so that is simply how we would extract it.</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">use hyper::Body;
+
+let body = Body::take_from(&amp;mut state)
+        .concat2()
+        .then(&#x2F;&#x2F; Do something with the body);
+</code></pre>
+<p>Now there is a fair bit of boiler plate to get this <code>Body</code> out of the state as
+the action is asynchronous. So I thought it would be nice if I could just
+provide a closure of what I want to do with the body once it is ready and not
+have to write this boiler plate out each time (I know twice in this case but I
+was determined). So after some fighting with the borrow checker with lifetimes
+this was the resulting create and update functions I got:</p>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">fn body_handler&lt;F&gt;(mut state: State, f: F) -&gt; Box&lt;HandlerFuture&gt;
+where
+    F: &#x27;static + Fn(String, &amp;State) -&gt; Response,
+{
+    let body = Body::take_from(&amp;mut state)
+        .concat2()
+        .then(move |full_body| match full_body {
+            Ok(valid_body) =&gt; {
+                let body_content = String::from_utf8(valid_body.to_vec()).unwrap();
+                let res = f(body_content, &amp;mut state);
+                future::ok((state, res))
+            }
+            Err(e) =&gt; return future::err((state, e.into_handler_error())),
+        });
+    Box::new(body)
+}
+
+fn create_task(state: State) -&gt; Box&lt;HandlerFuture&gt; {
+    body_handler(state, |s, state| {
+        let task = serde_json::from_str(&amp;s).expect(&quot;Failed to deserialize&quot;);
+        let conn = db_conn(state).expect(&quot;Failed with DB connection&quot;);
+        Task::create(&amp;conn, task);
+        create_response(state, StatusCode::Ok, None)
+    })
+}
+
+fn update_task(mut state: State) -&gt; Box&lt;HandlerFuture&gt; {
+    let PathId { id } = PathId::take_from(&amp;mut state);
+    body_handler(state, move |s, state| {
+        let task = serde_json::from_str(&amp;s).expect(&quot;Failed to deserialize&quot;);
+        let conn = db_conn(&amp;state).expect(&quot;Failed with DB connection&quot;);
+        Task::update(&amp;conn, id as i32, task);
+        create_response(state, StatusCode::Ok, None)
+    })
+}
+</code></pre>
+<h2 id="conclusion">Conclusion</h2>
+<p>All in all I hope I could give some really basic use cases for working with
+these frameworks and I hope to keep adding to this and improving the code as I
+go so keep an eye on the <a href="https://github.com/maccoda/micro-rs">repository</a> if you are interested.</p>
+<p>The key thing I wanted to try with this exercise was usability of the
+frameworks, not really comparing in terms of performance. I think in this small
+example Diesel was extremely easy to work with, mainly due to its helpful
+documentation and examples.</p>
+<p>In terms of the web frameworks you could definitely feel that Rocket was the
+more mature in particular with its documentation which really assisted in
+getting everything started. Further having those macros made everything very
+simple to get it together, so if speed to get a product is your thing I would
+definitely recommend. Also the variety of functionality Rocket currently
+supports is great, I have barely scratched the surface with this basic example.</p>
+<p>Gotham definitely has a lot going for it and it has very clear goals of what it
+wants to achieve. It does have a bit more boiler plate lying around but
+personally I don't mind that because I feel like I can understand a bit better
+how things are working. This is definitely a promising framework and look
+forward to seeing what is to come.</p>
+
+</div>
+
+        </div>
+
+    </body>
+
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+      <!-- Enable responsiveness on mobile devices-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+      <title>Maccoda Mail</title>
+
+      <!-- CSS -->
+      <link rel="stylesheet" href="https://maccoda.github.io/print.css" media="print">
+      <link rel="stylesheet" href="https://maccoda.github.io/poole.css">
+      <link rel="stylesheet" href="https://maccoda.github.io/hyde.css">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+      
+
+      
+<link rel="stylesheet" href="https://maccoda.github.io/style.css">
+
+<script src="/mermaid.min.js"></script>
+
+<script src="https://getinsights.io/static/js/insights.js"></script>
+<script>
+    var locationString = window.location.toString();
+    insights.init('yov5Y1hNA4UC4Hu0', { disabled: locationString.includes('localhost') || locationString.includes('127.0.0.1')});
+    insights.trackPages();
+</script>
+
+
+    </head>
+
+    <body class="theme-base-09 ">
+        
+            <div class="sidebar">
+                <div class="container sidebar-sticky">
+                    <div class="sidebar-about">
+                        
+                            <a href="https:&#x2F;&#x2F;maccoda.github.io"><h1>Maccoda Mail</h1></a>
+                            
+                            <p class="lead">Sending out some thoughts and learnings</p>
+                            
+                        
+                    </div>
+
+                    <ul class="sidebar-nav">
+                        
+    
+        <a href="https:&#x2F;&#x2F;github.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;GitHub-Mark-32px.png" alt=GitHub height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;gitlab.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;gitlab-icon-1-color-black-rgb.svg" alt=Gitlab height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;dev.to&#x2F;maccoda" style="display: inline-block;">
+            <img src="https:&#x2F;&#x2F;d2fltix0v2e0sb.cloudfront.net&#x2F;dev-badge.svg" alt=Dev.to blog height="30" width="30"/>
+        </a>
+    
+
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div class="content container">
+            
+<a href="..">▲ up</a>
+<div class="post">
+    <h1 class="post-title">Domain Mono Repos</h1>
+    <span class="post-date">2022-06-13 - 4 mins read</span>
+    <p>We use repositories every day as a software engineer. They are a simple
+organisational tool to group together code for a certain project. Primarily
+however they are driven by the fact they are a single repository in accordance with our
+source control (git). However, as the list of tools and processes that hook into
+these repositories grow, so too does the value of the repository. Slowly, it is
+becoming coupled with many other elements of our work. For example, we have
+plenty of tools to track history over a single repository using source control
+management. We have deployment pipelines that are typically attached to a single
+repository, which are responsible for getting our code out to production. We
+also have issue tracking and project management that is attached to a single
+repository. As we can see, the boundary at which we draw the repository is
+actually having more and more of an effect on how we work than simply a basic
+organisational tool.</p>
+<p>My most common approach for repository structure has been to have a single
+repository for a single deployable unit. Take a basic client server example.
+Typically there would be a UI repository to manage the client side code, and an
+API repository to manage the server side code. Along with that, if we are using
+infrastructure as code (which we probably should be) there would even be a third
+repository managing all the infrastructure. This model made a lot of sense
+initially. Each of these elements are a different deployable unit and typically
+there would only be a single language for each repository.</p>
+<p>However, as projects grew, and we lean more into automation and tooling this
+model started to show some cracks. To add value for the customer, it is uncommon
+we can achieve this solely through the UI or the API. It is more common to need
+to make changes across both these deployable units to add value. Therefore for a
+single task we need to make changes to multiple repositories, which means
+multiple code reviews. Not to mention needing to maintain more repositories
+moving at different rates. This was obviously such as issue as the popular
+editor VSCode even supports a notion of <em>workspaces</em> to work across multiple
+repositories/directories. Once all parts were reviewed and integrated into the
+pipeline then came the issue of ensuring the correct deployment order. It is
+fairly common that the UI should depend on the API. Thus, we always require the
+API to be deployed before the UI. This is not codified in our repositories as
+most CI tools create a separate pipeline per repository, hence it becomes
+difficult to ensure that the UI is never deployed without first having the API
+with the relevant changes deployed.</p>
+<p>These draw backs are what have led to the idea of a new repository style,
+drawing on Domain Driven Design (DDD) and hence the name <em>Domain Mono Repos</em>.
+The idea is that the same boundary that is created for a domain when designing
+is the same boundary to define what sits within the domain mono repo. How this
+looks in practice is that a single repository will contain all deployable units
+and their infrastructure. For example, a single domain might consist of a NodeJS
+API deployed on AWS ECS, a single page application UI and some AWS Lambda
+Functions and AWS SQS queues. For this there would be a single repository that
+separates these all into different directories, each having their respective
+project structure.</p>
+<p>Structuring a repository in this way addresses the issues mentioned earlier:</p>
+<ul>
+<li>a single feature can be implemented and raised in a single code review across
+all deployable units</li>
+<li>a pipeline can be created to ensure the correct deployment order for each
+deployable unit</li>
+<li>easier tracking of change history with commits being able to span the whole
+domain</li>
+</ul>
+<p>Some other benefits that have been observed:</p>
+<ul>
+<li>logistically easier to find code and projects as there are fewer repositories
+and are named using the same language as the domain, hence easier to search
+for</li>
+<li>less template repositories to manage as they all essentially are created from
+the same start point</li>
+</ul>
+
+</div>
+
+        </div>
+
+    </body>
+
+</html>

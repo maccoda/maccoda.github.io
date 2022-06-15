@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+      <!-- Enable responsiveness on mobile devices-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+      <title>Maccoda Mail</title>
+
+      <!-- CSS -->
+      <link rel="stylesheet" href="https://maccoda.github.io/print.css" media="print">
+      <link rel="stylesheet" href="https://maccoda.github.io/poole.css">
+      <link rel="stylesheet" href="https://maccoda.github.io/hyde.css">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+      
+
+      
+<link rel="stylesheet" href="https://maccoda.github.io/style.css">
+
+<script src="/mermaid.min.js"></script>
+
+<script src="https://getinsights.io/static/js/insights.js"></script>
+<script>
+    var locationString = window.location.toString();
+    insights.init('yov5Y1hNA4UC4Hu0', { disabled: locationString.includes('localhost') || locationString.includes('127.0.0.1')});
+    insights.trackPages();
+</script>
+
+
+    </head>
+
+    <body class="theme-base-09 ">
+        
+            <div class="sidebar">
+                <div class="container sidebar-sticky">
+                    <div class="sidebar-about">
+                        
+                            <a href="https:&#x2F;&#x2F;maccoda.github.io"><h1>Maccoda Mail</h1></a>
+                            
+                            <p class="lead">Sending out some thoughts and learnings</p>
+                            
+                        
+                    </div>
+
+                    <ul class="sidebar-nav">
+                        
+    
+        <a href="https:&#x2F;&#x2F;github.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;GitHub-Mark-32px.png" alt=GitHub height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;gitlab.com&#x2F;maccoda" style="display: inline-block;">
+            <img src="&#x2F;images&#x2F;gitlab-icon-1-color-black-rgb.svg" alt=Gitlab height="30" width="30"/>
+        </a>
+    
+        <a href="https:&#x2F;&#x2F;dev.to&#x2F;maccoda" style="display: inline-block;">
+            <img src="https:&#x2F;&#x2F;d2fltix0v2e0sb.cloudfront.net&#x2F;dev-badge.svg" alt=Dev.to blog height="30" width="30"/>
+        </a>
+    
+
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div class="content container">
+            
+<a href="..">▲ up</a>
+<div class="post">
+    <h1 class="post-title">Kotlin class validation in initialization</h1>
+    <span class="post-date">2020-03-22 - 3 mins read</span>
+    <p>Recently I was working with a bit of code where we had written validation logic in the constructor.
+This was simply validating that the input received from an API call matched what we required. We are
+currently migrating some of the code across from Java to Kotlin and whilst most of the time this is
+a straightforward process this validation one wasn't so smooth.</p>
+<p>Let's say you have a <code>FullName</code> class that requires both a first and last name that cannot be empty.
+We might have a class something like the following:</p>
+<pre data-lang="java" class="language-java "><code class="language-java" data-lang="java">public class FullName {
+  private final String firstName;
+  private final String lastName;
+
+  public FullName(final String firstName, final String lastName) {
+    if (StringUtils.isBlank(firstName) || StringUtils.isBlank(lastName)) {
+      throw new InvalidDataException(&quot;Names must not be blank&quot;);
+    }
+    this.firstName = firstName;
+    this.lastName = lastName;
+  }
+  &#x2F;&#x2F; getters...
+}
+</code></pre>
+<p>We want to move this across to a new <code>FullName</code> Kotlin class instead, below are some of the options
+we managed create. Each have different styles and benefits so it is up to you which you prefer.</p>
+<p><em>For these examples I am assuming that <code>firstName</code> and <code>lastName</code> didn't have to add a <code>null</code> check.
+If this is not the case for you simply change the type to a nullable type and perform the check
+using <a href="https://kotlinlang.org/docs/reference/null-safety.html#safe-calls">safe calls</a> or similar. Do this so that you do not get an exception throw from the standard
+library which is essentially a null pointer exception.</em></p>
+<h3 id="using-an-init-block">Using an <code>init</code> block</h3>
+<pre data-lang="kotlin" class="language-kotlin "><code class="language-kotlin" data-lang="kotlin">class FullName(firstName: String, lastName: String) {
+    val firstName: String
+    val lastName: String
+    init {
+        if (firstName.isBlank() || lastName.isBlank()) {
+            throw RuntimeException(&quot;Name cannot be blank&quot;)
+        }
+        this.firstName = firstName
+        this.lastName = lastName
+    }
+}
+</code></pre>
+<p><strong>Try this <a href="https://pl.kotl.in/0dQNj7Fb2">in the playground</a></strong></p>
+<h4 id="pros">Pros</h4>
+<ul>
+<li>This has the same interface as the previous Java class so all calling code should fit nicely</li>
+</ul>
+<h4 id="cons">Cons</h4>
+<ul>
+<li>We haven't been able to convert to a <code>data class</code> where it may have been similar to one in Java.
+This is because a <code>data class</code> requires a public field being present in the primary constructor.
+This can easily be overcome by using your IDE to generate the <code>equals/hashcode</code> and <code>toString</code>
+functions you may have wanted.</li>
+</ul>
+<h3 id="use-a-static-constructor">Use a static constructor</h3>
+<p>Using static constructors is a recommended practice as per Effective Java, so one alternative is to
+put the validation logic into such a function so the class becomes simple. In our above I believe it
+was done in the way above to match the Spring MVC convention.</p>
+<pre data-lang="kotlin" class="language-kotlin "><code class="language-kotlin" data-lang="kotlin">data class FullName private constructor(val firstName: String, val lastName: String) {
+
+    companion object {
+        fun of(firstName: String, lastName: String): FullName {
+            if(firstName.isBlank() || lastName.isBlank()) {
+                throw RuntimeException(&quot;Name cannot be blank&quot;)
+            }
+            return FullName(firstName, lastName)
+        }
+    }
+}
+</code></pre>
+<p><strong>Try this <a href="https://pl.kotl.in/QfFA6uqJt">in the playground</a></strong></p>
+<h4 id="pros-1">Pros</h4>
+<ul>
+<li>We are now able to use the <code>data class</code></li>
+<li>The class itself doesn't have a 'smart' constructor</li>
+<li>We are able to make all construction through the static method using <code>private constructor</code></li>
+</ul>
+<h4 id="cons-1">Cons</h4>
+<ul>
+<li>We have now changed the signature of the class for the callers of the existing class</li>
+</ul>
+<h3 id="using-invoke-to-get-both">Using <code>Invoke</code> to get both</h3>
+<p>I have not been able to test how this works with Java interoperability but this option will give you
+the best of the above two solutions.</p>
+<pre data-lang="kotlin" class="language-kotlin "><code class="language-kotlin" data-lang="kotlin">data class FullName private constructor(val firstName: String, val lastName: String) {
+
+    companion object {
+        operator fun invoke(firstName: String, lastName: String): FullName {
+            if(firstName.isBlank() || lastName.isBlank()) {
+                throw RuntimeException(&quot;Name cannot be blank&quot;)
+            }
+            return FullName(firstName, lastName)
+        }
+    }
+}
+</code></pre>
+<p><strong>Try this <a href="https://pl.kotl.in/GIfzAHuXR">in the playground</a></strong></p>
+
+</div>
+
+        </div>
+
+    </body>
+
+</html>
